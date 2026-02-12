@@ -3,12 +3,23 @@
 A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with Electron and PeerJS.
 
 ## Table of Contents
-1. [User Guide](#user-guide)
-2. [Features & Current Status](#features--current-status)
-3. [How it Works](#how-it-works)
-4. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
-5. [Why NullChat?](#why-nullchat)
-6. [Security & Privacy](#security--privacy)
+1. [Download & Install](#download--install-📥)
+2. [User Guide](#user-guide)
+3. [Features & Current Status](#features--current-status)
+4. [How it Works](#how-it-works)
+5. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
+6. [Why NullChat?](#why-nullchat)
+7. [Security & Privacy](#security--privacy)
+
+---
+
+## Download & Install 📥
+
+**[Download the latest version here](https://github.com/xDerApfelx/NullChat/releases)**
+
+NullChat comes as a standard Windows installer (`.exe`).
+- **Standard Options:** The installer lets you choose the installation user (current user or all users).
+- **No Admin Rights Needed:** By default, it installs to your local user folder, so you don't even need administrator privileges.
 
 ---
 
@@ -24,6 +35,7 @@ Since I'm currently working on a simple installer (or an .exe file), usage is cu
 ---
 
 ## Features & Current Status
+- [x] **1-on-1 Chats:** Currently limited to **2 users** (you and one friend) at a time.
 - [x] **True P2P:** Direct connection without detours.
 - [x] **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
 - [x] **Persistent ID:** Your ID remains the same even after a restart (stored in a small local file).
