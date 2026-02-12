@@ -3,12 +3,39 @@
 A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with Electron and PeerJS.
 
 ## Table of Contents
-1. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
-2. [Why NullChat?](#why-nullchat)
+1. [User Guide](#user-guide)
+2. [Features & Current Status](#features--current-status)
 3. [How it Works](#how-it-works)
-4. [Features & Current Status](#features--current-status)
-5. [User Guide](#user-guide)
+4. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
+5. [Why NullChat?](#why-nullchat)
 6. [Security & Privacy](#security--privacy)
+
+---
+
+## User Guide
+Since I'm currently working on a simple installer (or an .exe file), usage is currently intended for people who can handle the code. However, it will be easier in the future!
+
+1. **Share ID:** When you start the program, you will see your personal ID. Click the "Copy" button.
+2. **Send to Friend:** Since there is no central server to find people, you need to **send this ID to your friend through another channel** (e.g., via phone, SMS, or another messenger).
+3. **Connect:** Your friend enters your ID on their end and clicks "Connect."
+4. **Chat & Speak:** As soon as it says "Connected," you can start typing. The microphone is active by default for voice chat.
+5. **Mute/Disconnect:** You can mute yourself or terminate the connection using the buttons at the top.
+
+---
+
+## Features & Current Status
+- [x] **True P2P:** Direct connection without detours.
+- [x] **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
+- [x] **Persistent ID:** Your ID remains the same even after a restart (stored in a small local file).
+- [x] **Voice Chat:** A voice connection is automatically established as soon as you connect.
+- [x] **Dark Mode:** A simple, modern design (inspired by Discord).
+
+---
+
+## How it Works
+NullChat uses **WebRTC technology**. Instead of your messages running through a central server from Discord or WhatsApp, your PC establishes a **direct connection** to your friend's PC.
+
+A small signaling server (PeerJS Cloud) only helps the two PCs find each other on the internet ("handshake"). Once the connection is established, chat and voice flow directly from user to user.
 
 ---
 
@@ -29,32 +56,6 @@ I created NullChat almost entirely with the help of AI. This means:
 The name says it all. **Null** data permanently stored. **Null** tracking. **Null** account requirement.
 
 It’s intended for people who need a fast, private connection to a friend without a big corporation sitting in the middle.
-
----
-
-## How it Works
-NullChat uses **WebRTC technology**. Instead of your messages running through a central server from Discord or WhatsApp, your PC establishes a **direct connection** to your friend's PC.
-
-A small signaling server (PeerJS Cloud) only helps the two PCs find each other on the internet ("handshake"). Once the connection is established, chat and voice flow directly from user to user.
-
----
-
-## Features & Current Status
-- [x] **True P2P:** Direct connection without detours.
-- [x] **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
-- [x] **Persistent ID:** Your ID remains the same even after a restart (stored in a small local file).
-- [x] **Voice Chat:** A voice connection is automatically established as soon as you connect.
-- [x] **Dark Mode:** A simple, modern design (inspired by Discord).
-
----
-
-## User Guide
-Since I'm currently working on a simple installer (or an .exe file), usage is currently intended for people who can handle the code. However, it will be easier in the future!
-
-1. **Share ID:** When you start the program, you will see your personal ID. Copy it and send it to your friend.
-2. **Connect:** Your friend enters your ID on their end and clicks "Connect."
-3. **Chat & Speak:** As soon as it says "Connected," you can start typing. The microphone is active by default for voice chat.
-4. **Mute/Disconnect:** You can mute yourself or terminate the connection using the buttons at the top.
 
 ---
 
