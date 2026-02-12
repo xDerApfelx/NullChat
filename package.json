@@ -1,5 +1,5 @@
 {
-    "name": "p2p-chat",
+    "name": "nullchat",
     "version": "1.0.0",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "main": "main.js",
@@ -16,8 +16,8 @@
         "electron-builder": "^24.9.1"
     },
     "build": {
-        "appId": "com.p2pchat.app",
-        "productName": "P2P Chat",
+        "appId": "com.nullchat.app",
+        "productName": "NullChat",
         "win": {
             "target": "nsis"
         },
