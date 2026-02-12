@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+config.json
+.DS_Store
+*.exe
+*.zip
+*.dmg

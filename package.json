@@ -1,0 +1,33 @@
+{
+    "name": "p2p-chat",
+    "version": "1.0.0",
+    "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "make": "electron-builder --win --x64"
+    },
+    "dependencies": {
+        "peerjs": "^1.5.4",
+        "uuid": "^9.0.1"
+    },
+    "devDependencies": {
+        "electron": "^28.1.0",
+        "electron-builder": "^24.9.1"
+    },
+    "build": {
+        "appId": "com.p2pchat.app",
+        "productName": "P2P Chat",
+        "win": {
+            "target": "nsis"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "index.html",
+            "renderer.js",
+            "styles.css",
+            "package.json"
+        ]
+    }
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' https://unpkg.com;
+                 connect-src *;
+                 media-src *;
+                 style-src 'self' 'unsafe-inline';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P2P Chat</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ════════════════════════════ LOGIN VIEW ════════════════════════════ -->
+  <div id="login-view">
+    <h1>🔒 P2P Chat</h1>
+    <p class="subtitle">Secure peer-to-peer messaging &amp; voice</p>
+
+    <div class="id-display">
+      <label>My ID</label>
+      <span class="id-text" id="my-id">Loading…</span>
+      <button class="copy-btn" id="copy-btn">Copy</button>
+    </div>
+
+    <div class="connect-section">
+      <label for="friend-id-input">Enter Friend's ID</label>
+      <input type="text" id="friend-id-input" placeholder="Paste your friend's ID here…" autocomplete="off" spellcheck="false" />
+      <button class="connect-btn" id="connect-btn">Connect</button>
+    </div>
+
+    <p class="status-text" id="status-text"></p>
+  </div>
+
+  <!-- ════════════════════════════ CHAT VIEW ═════════════════════════════ -->
+  <div id="chat-view">
+    <div class="chat-header">
+      <div class="peer-info">
+        <div class="peer-avatar" id="peer-avatar">?</div>
+        <div>
+          <div class="peer-name" id="peer-name">Friend</div>
+          <div class="peer-status">● Connected</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="mute-btn" id="mute-btn">🎤 Mute</button>
+        <button class="disconnect-btn" id="disconnect-btn">Disconnect</button>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages"></div>
+
+    <div class="chat-input-bar">
+      <input type="text" id="msg-input" placeholder="Type a message…" autocomplete="off" spellcheck="false" />
+      <button class="send-btn" id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast" id="toast"></div>
+
+  <!-- PeerJS from CDN -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
