@@ -1,5 +1,7 @@
 # NullChat 🔒
 
+[![Roadmap](https://img.shields.io/badge/Roadmap-View%20Plans-blue?style=for-the-badge)](ROADMAP.md)
+
 A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with Electron and PeerJS.
 
 ## Table of Contents
