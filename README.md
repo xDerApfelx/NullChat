@@ -1,3 +1,11 @@
+# NullChat 🔒
+
+A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with Electron and PeerJS.
+
+## Table of Contents
+1. [Download & Install](#download--install-📥)
+2. [User Guide](#user-guide)
+3. [Features & Current Status](#features--current-status)
 4. [How it Works](#how-it-works)
 5. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
 6. [Why NullChat?](#why-nullchat)
