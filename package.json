@@ -35,6 +35,7 @@
             "index.html",
             "renderer.js",
             "styles.css",
+            "logger.js",
             "package.json",
             "assets"
         ]

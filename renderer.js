@@ -23,6 +23,13 @@ let activeCall = null;
 let myId = '';
 let isMuted = false;
 
+// ── Anonymous logger shorthand ──────────────────────────────────────────────────
+const rlog = {
+    info: (msg) => window.electronAPI.log('info', msg),
+    warn: (msg) => window.electronAPI.log('warn', msg),
+    error: (msg) => window.electronAPI.log('error', msg)
+};
+
 // ── Toast helper ────────────────────────────────────────────────────────────────
 function showToast(message, type = '') {
     toastEl.textContent = message;
@@ -95,6 +102,7 @@ async function getLocalAudio() {
     } catch (err) {
         console.warn('Microphone access denied:', err);
         showToast('Microphone access denied — voice disabled', 'error');
+        rlog.warn('Microphone access denied');
         return null;
     }
 }
@@ -113,6 +121,7 @@ async function initiateVoiceCall(friendId) {
     activeCall.on('stream', playRemoteStream);
     activeCall.on('close', () => { activeCall = null; });
     addSystemMessage('🎤 Voice call active');
+    rlog.info('Outgoing voice call started');
 }
 
 function answerCall(incomingCall) {
@@ -126,6 +135,7 @@ function answerCall(incomingCall) {
         activeCall.on('stream', playRemoteStream);
         activeCall.on('close', () => { activeCall = null; });
         addSystemMessage('🎤 Voice call active');
+        rlog.info('Incoming voice call answered');
     });
 }
 
@@ -135,10 +145,12 @@ function wireConnection(dataConn) {
 
     conn.on('data', (data) => {
         addMessage(data, 'friend');
+        rlog.info('User (friend) sent message');
     });
 
     conn.on('close', () => {
         addSystemMessage('Peer disconnected.');
+        rlog.info('Peer connection closed by remote');
         cleanup();
         showLogin();
         showToast('Peer disconnected', 'error');
@@ -146,6 +158,7 @@ function wireConnection(dataConn) {
 
     conn.on('error', (err) => {
         console.error('Connection error:', err);
+        rlog.error('Connection error: ' + err.type);
         showToast('Connection error: ' + err.message, 'error');
     });
 }
@@ -156,6 +169,7 @@ function sendMessage() {
     if (!text || !conn || !conn.open) return;
     conn.send(text);
     addMessage(text, 'self');
+    rlog.info('User (me) sent message');
     msgInput.value = '';
     msgInput.focus();
 }
@@ -184,16 +198,17 @@ async function init() {
         myIdEl.textContent = id;
         statusText.textContent = 'Ready to connect';
         statusText.className = 'status-text success';
+        rlog.info('PeerJS connected to signaling server');
     });
 
     peer.on('error', (err) => {
         console.error('PeerJS error:', err);
+        rlog.error('PeerJS error: ' + err.type);
         if (err.type === 'peer-unavailable') {
             statusText.textContent = 'Peer not found. Check the ID and try again.';
             statusText.className = 'status-text error';
             connectBtn.disabled = false;
         } else if (err.type === 'unavailable-id') {
-            // ID collision — regenerate in next restart; for now just warn
             statusText.textContent = 'Your ID is busy. Restart the app.';
             statusText.className = 'status-text error';
         } else {
@@ -213,6 +228,7 @@ async function init() {
 
         incomingConn.on('open', () => {
             showChat(incomingConn.peer);
+            rlog.info('Incoming peer connection established');
         });
     });
 
@@ -263,11 +279,13 @@ connectBtn.addEventListener('click', () => {
     outgoing.on('open', () => {
         wireConnection(outgoing);
         showChat(friendId);
+        rlog.info('Outgoing peer connection established');
         // Also initiate voice call
         initiateVoiceCall(friendId);
     });
 
     outgoing.on('error', (err) => {
+        rlog.error('Outgoing connection failed: ' + err.type);
         statusText.textContent = 'Connection failed: ' + err.message;
         statusText.className = 'status-text error';
         connectBtn.disabled = false;
@@ -294,10 +312,12 @@ muteBtn.addEventListener('click', () => {
     });
     muteBtn.textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
     muteBtn.classList.toggle('muted', isMuted);
+    rlog.info(isMuted ? 'Microphone muted' : 'Microphone unmuted');
 });
 
 // Disconnect
 disconnectBtn.addEventListener('click', () => {
+    rlog.info('User disconnected manually');
     cleanup();
     showLogin();
     // Re-initialise peer so we can accept new connections

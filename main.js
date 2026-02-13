@@ -2,6 +2,12 @@ const { app, BrowserWindow, ipcMain, clipboard, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const log = require('./logger');
+
+// ── Initialise logger early ─────────────────────────────────────────────────────
+log.init(app.getPath('userData'));
+log.installCrashHandlers();
+log.info(`App starting (v${app.getVersion()})`);
 
 // ── Config helpers ──────────────────────────────────────────────────────────────
 const CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
@@ -10,13 +16,17 @@ function loadOrCreateUserId() {
     try {
         if (fs.existsSync(CONFIG_PATH)) {
             const data = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-            if (data.userId) return data.userId;
+            if (data.userId) {
+                log.info('User ID loaded from config');
+                return data.userId;
+            }
         }
     } catch (_) {
-        // corrupted file → regenerate
+        log.warn('Config file corrupted, regenerating user ID');
     }
     const userId = uuidv4();
     fs.writeFileSync(CONFIG_PATH, JSON.stringify({ userId }), 'utf-8');
+    log.info('New user ID generated');
     return userId;
 }
 
@@ -25,7 +35,6 @@ const GITHUB_REPO = 'xDerApfelx/NullChat';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
 
 function compareVersions(a, b) {
-    // Returns 1 if a > b, -1 if a < b, 0 if equal
     const pa = a.replace(/^v/, '').split('.').map(Number);
     const pb = b.replace(/^v/, '').split('.').map(Number);
     for (let i = 0; i < 3; i++) {
@@ -38,6 +47,7 @@ function compareVersions(a, b) {
 }
 
 async function checkForUpdates() {
+    log.info('Checking for updates...');
     try {
         const { net } = require('electron');
         const currentVersion = app.getVersion();
@@ -46,18 +56,28 @@ async function checkForUpdates() {
             headers: { 'User-Agent': 'NullChat-Updater' }
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            log.warn(`Update check HTTP error: ${response.status}`);
+            return;
+        }
 
         const releases = await response.json();
-        if (!releases || !releases.length) return;
+        if (!releases || !releases.length) {
+            log.info('No releases found on GitHub');
+            return;
+        }
 
-        // Filter releases newer than current version
         const newerReleases = releases.filter(r => {
             const tag = r.tag_name || '';
             return compareVersions(tag, currentVersion) > 0;
         });
 
-        if (newerReleases.length === 0) return;
+        if (newerReleases.length === 0) {
+            log.info('App is up to date');
+            return;
+        }
+
+        log.info(`Update available: ${newerReleases[0].tag_name} (${newerReleases.length} newer release(s))`);
 
         const latest = newerReleases[0];
         const updateData = {
@@ -74,7 +94,7 @@ async function checkForUpdates() {
 
         mainWindow.webContents.send('update-available', updateData);
     } catch (err) {
-        console.warn('Update check failed:', err.message);
+        log.error(`Update check failed: ${err.message}`);
     }
 }
 
@@ -82,6 +102,7 @@ async function checkForUpdates() {
 let mainWindow;
 
 function createWindow() {
+    log.info('Creating main window');
     mainWindow = new BrowserWindow({
         width: 900,
         height: 650,
@@ -103,8 +124,13 @@ function createWindow() {
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
-        // Check for updates after the window is visible
+        log.info('Main window visible');
         checkForUpdates();
+    });
+
+    mainWindow.on('closed', () => {
+        log.info('Main window closed');
+        mainWindow = null;
     });
 }
 
@@ -115,6 +141,7 @@ ipcMain.handle('get-user-id', () => {
 
 ipcMain.handle('copy-to-clipboard', (_event, text) => {
     clipboard.writeText(text);
+    log.info('ID copied to clipboard');
     return true;
 });
 
@@ -123,15 +150,30 @@ ipcMain.handle('get-app-version', () => {
 });
 
 ipcMain.handle('open-external', (_event, url) => {
+    log.info('Opening external URL in browser');
     shell.openExternal(url);
     return true;
+});
+
+// Renderer log relay — accept anonymous log entries from the renderer process
+ipcMain.on('log-from-renderer', (_event, level, message) => {
+    if (level === 'error') log.error(`[renderer] ${message}`);
+    else if (level === 'warn') log.warn(`[renderer] ${message}`);
+    else log.info(`[renderer] ${message}`);
 });
 
 // ── App lifecycle ───────────────────────────────────────────────────────────────
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
+    if (process.platform !== 'darwin') {
+        log.shutdown();
+        app.quit();
+    }
+});
+
+app.on('before-quit', () => {
+    log.shutdown();
 });
 
 app.on('activate', () => {
