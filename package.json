@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "main": "main.js",
     "scripts": {
@@ -19,7 +19,8 @@
         "appId": "com.nullchat.app",
         "productName": "NullChat",
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "assets/icon.ico"
         },
         "nsis": {
             "oneClick": false,
@@ -34,7 +35,8 @@
             "index.html",
             "renderer.js",
             "styles.css",
-            "package.json"
+            "package.json",
+            "assets"
         ]
     }
 }
