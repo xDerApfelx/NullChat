@@ -307,3 +307,79 @@ disconnectBtn.addEventListener('click', () => {
 
 // ── Start ───────────────────────────────────────────────────────────────────────
 init();
+
+// ── Update notification ─────────────────────────────────────────────────────────
+const updateBanner = document.getElementById('update-banner');
+const updateVersion = document.getElementById('update-version');
+const updateOverlay = document.getElementById('update-overlay');
+const updateReleasesEl = document.getElementById('update-releases');
+const updateSkipBtn = document.getElementById('update-skip-btn');
+const updateDownloadBtn = document.getElementById('update-download-btn');
+const currentVersionEl = document.getElementById('current-version');
+
+let updateDownloadUrl = '';
+
+window.electronAPI.onUpdateAvailable(async (data) => {
+    // Show banner
+    updateVersion.textContent = data.latestVersion;
+    updateBanner.style.display = 'block';
+    updateDownloadUrl = data.downloadUrl;
+
+    // Set current version
+    const currentVer = await window.electronAPI.getAppVersion();
+    currentVersionEl.textContent = 'v' + currentVer;
+
+    // Build release list for modal
+    updateReleasesEl.innerHTML = '';
+    data.releases.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'update-release-item';
+
+        const header = document.createElement('div');
+        header.className = 'update-release-header';
+
+        const version = document.createElement('span');
+        version.className = 'update-release-version';
+        version.textContent = r.version;
+
+        const date = document.createElement('span');
+        date.className = 'update-release-date';
+        date.textContent = r.date;
+
+        header.appendChild(version);
+        header.appendChild(date);
+
+        const body = document.createElement('div');
+        body.className = 'update-release-body';
+        body.textContent = r.body;
+
+        item.appendChild(header);
+        item.appendChild(body);
+        updateReleasesEl.appendChild(item);
+    });
+});
+
+// Open modal when banner is clicked
+updateBanner.addEventListener('click', () => {
+    updateOverlay.style.display = 'flex';
+});
+
+// Skip button
+updateSkipBtn.addEventListener('click', () => {
+    updateOverlay.style.display = 'none';
+});
+
+// Download button
+updateDownloadBtn.addEventListener('click', () => {
+    if (updateDownloadUrl) {
+        window.electronAPI.openExternal(updateDownloadUrl);
+    }
+    updateOverlay.style.display = 'none';
+});
+
+// Close modal when clicking outside
+updateOverlay.addEventListener('click', (e) => {
+    if (e.target === updateOverlay) {
+        updateOverlay.style.display = 'none';
+    }
+});

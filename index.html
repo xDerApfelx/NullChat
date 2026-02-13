@@ -9,14 +9,19 @@
                  media-src *;
                  style-src 'self' 'unsafe-inline';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>P2P Chat</title>
+  <title>NullChat</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
   <!-- ════════════════════════════ LOGIN VIEW ════════════════════════════ -->
   <div id="login-view">
-    <h1>🔒 P2P Chat</h1>
+    <!-- Update banner -->
+    <div class="update-banner" id="update-banner" style="display:none;">
+      🔔 New update available: <span id="update-version"></span>
+    </div>
+
+    <h1>🔒 NullChat</h1>
     <p class="subtitle">Secure peer-to-peer messaging &amp; voice</p>
 
     <div class="id-display">
@@ -55,6 +60,19 @@
     <div class="chat-input-bar">
       <input type="text" id="msg-input" placeholder="Type a message…" autocomplete="off" spellcheck="false" />
       <button class="send-btn" id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <!-- Update Modal -->
+  <div class="update-overlay" id="update-overlay" style="display:none;">
+    <div class="update-modal">
+      <h2>🚀 Updates Available</h2>
+      <p class="update-modal-sub">You are running <span id="current-version"></span></p>
+      <div class="update-releases" id="update-releases"></div>
+      <div class="update-modal-actions">
+        <button class="update-skip-btn" id="update-skip-btn">Skip</button>
+        <button class="update-download-btn" id="update-download-btn">Download Latest</button>
+      </div>
     </div>
   </div>
 
