@@ -10,6 +10,7 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 5. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
 6. [Why NullChat?](#why-nullchat)
 7. [Security & Privacy](#security--privacy)
+8. [Troubleshooting & Support](#troubleshooting--support)
 
 ---
 
@@ -77,3 +78,16 @@ It’s intended for people who need a fast, private connection to a friend witho
 - **Encryption:** All data is end-to-end encrypted by default via WebRTC (DTLS/SRTP).
 - **Security-First:** The program is configured so that the chat part has no access to your hard drive or system (sandboxing).
 - **No Cloud:** Your messages never touch a cloud database.
+
+## Troubleshooting & Support
+
+Encountering issues? We're here to help!
+
+### How to Report a Bug
+1.  **Check the logs:** NullChat creates an anonymous log file to help diagnose problems.
+    *   Open File Explorer and paste this into the address bar: `%APPDATA%\nullchat\logs`
+    *   You will see a file named `nullchat.log`.
+2.  Open an issue on GitHub: [Click here to report a bug](https://github.com/xDerApfelx/NullChat/issues)
+3.  **Attach the log file:** Drag and drop the `nullchat.log` file into your issue description.
+
+**Privacy Note:** The log file is designed to be **100% anonymous**. It does NOT contain your messages, your friends' IDs, or any personal data. It only tracks technical events (e.g., 'Connection failed', 'App crashed').
