@@ -31,6 +31,7 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v1.1.2:** Markdown Changelogs & Release Insights.
 - [x] **v1.1.1:** Anonymous Logging System & Troubleshooting.
 - [x] **v1.1.0:** Auto-Update System via GitHub API.
 - [x] **v1.0.1:** Custom Application Icons.
