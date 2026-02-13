@@ -400,13 +400,27 @@ body {
 
 /* ── Animations ──────────────────────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes msgIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Toast notifications ─────────────────────────────────────────────────────── */
@@ -545,7 +559,52 @@ body {
   font-size: 13px;
   line-height: 1.5;
   color: var(--text-secondary);
-  white-space: pre-wrap;
+}
+
+.update-release-body h2,
+.update-release-body h3,
+.update-release-body h4 {
+  color: var(--text-primary);
+  margin: 10px 0 4px 0;
+  font-weight: 600;
+}
+
+.update-release-body h2 {
+  font-size: 16px;
+}
+
+.update-release-body h3 {
+  font-size: 14px;
+}
+
+.update-release-body h4 {
+  font-size: 13px;
+}
+
+.update-release-body p {
+  margin: 4px 0;
+}
+
+.update-release-body ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.update-release-body li {
+  margin: 2px 0;
+}
+
+.update-release-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.update-release-body code {
+  background: var(--bg-input);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
 }
 
 .update-modal-actions {

@@ -339,6 +339,76 @@ const currentVersionEl = document.getElementById('current-version');
 
 let updateDownloadUrl = '';
 
+// ── Simple Markdown → HTML parser (for changelogs) ──────────────────────────────
+function simpleMarkdown(text) {
+    if (!text) return '';
+
+    // 1) Escape HTML entities first (security)
+    let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // 2) Split into lines for block-level processing
+    const lines = html.split('\n');
+    const result = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        // Headers: ### → h4, ## → h3, # → h2
+        if (line.match(/^#{3,}\s/)) {
+            if (inList) { result.push('</ul>'); inList = false; }
+            line = '<h4>' + line.replace(/^#{3,}\s*/, '') + '</h4>';
+            result.push(line);
+            continue;
+        }
+        if (line.match(/^##\s/)) {
+            if (inList) { result.push('</ul>'); inList = false; }
+            line = '<h3>' + line.replace(/^##\s*/, '') + '</h3>';
+            result.push(line);
+            continue;
+        }
+        if (line.match(/^#\s/)) {
+            if (inList) { result.push('</ul>'); inList = false; }
+            line = '<h2>' + line.replace(/^#\s*/, '') + '</h2>';
+            result.push(line);
+            continue;
+        }
+
+        // List items: - or * at start of line
+        if (line.match(/^\s*[-*]\s+/)) {
+            if (!inList) { result.push('<ul>'); inList = true; }
+            line = '<li>' + line.replace(/^\s*[-*]\s+/, '') + '</li>';
+            result.push(line);
+            continue;
+        }
+
+        // Close list if we hit a non-list line
+        if (inList) { result.push('</ul>'); inList = false; }
+
+        // Empty line → skip (spacing handled by CSS)
+        if (line.trim() === '') {
+            continue;
+        }
+
+        // Regular paragraph
+        result.push('<p>' + line + '</p>');
+    }
+
+    if (inList) result.push('</ul>');
+
+    html = result.join('\n');
+
+    // 3) Inline formatting (applied after block processing)
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/`(.+?)`/g, '<code>$1</code>');
+
+    return html;
+}
+
 window.electronAPI.onUpdateAvailable(async (data) => {
     // Show banner
     updateVersion.textContent = data.latestVersion;
@@ -371,7 +441,7 @@ window.electronAPI.onUpdateAvailable(async (data) => {
 
         const body = document.createElement('div');
         body.className = 'update-release-body';
-        body.textContent = r.body;
+        body.innerHTML = simpleMarkdown(r.body);
 
         item.appendChild(header);
         item.appendChild(body);
