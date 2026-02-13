@@ -411,7 +411,9 @@ function simpleMarkdown(text) {
 
 window.electronAPI.onUpdateAvailable(async (data) => {
     // Show banner
-    updateVersion.textContent = data.latestVersion;
+    const count = data.releases.length;
+    const versionWord = count === 1 ? 'version' : 'versions';
+    updateVersion.textContent = `${data.latestVersion} (${count} ${versionWord} behind)`;
     updateBanner.style.display = 'block';
     updateDownloadUrl = data.downloadUrl;
 
