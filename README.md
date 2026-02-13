@@ -27,32 +27,53 @@ NullChat comes as a standard Windows installer (`.exe`).
 ---
 
 ## User Guide
-Since I'm currently working on a simple installer (or an .exe file), usage is currently intended for people who can handle the code. However, it will be easier in the future!
-
-1. **Share ID:** When you start the program, you will see your personal ID. Click the "Copy" button.
-2. **Send to Friend:** Since there is no central server to find people, you need to **send this ID to your friend through another channel** (e.g., via phone, SMS, or another messenger).
-3. **Connect:** Your friend enters your ID on their end and clicks "Connect."
-4. **Chat & Speak:** As soon as it says "Connected," you can start typing. The microphone is active by default for voice chat.
-5. **Mute/Disconnect:** You can mute yourself or terminate the connection using the buttons at the top.
+1. **Share ID:** When you start the program, you will see your personal ID.
+2. **Send to Friend:** Share this ID with a friend securely (e.g., via Signal or in person). NullChat does not store a friend list.
+3. **Connect:** Your friend enters your ID and clicks "Connect."
+4. **Chat & Speak:** Once connected, text and voice are live.
 
 ---
 
 ## Features & Current Status
-- [x] **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
-- [x] **Custom Icons:** Professional look with dedicated icons.
-- [x] **1-on-1 Chats:** Currently limited to **2 users** (you and one friend) at a time.
-- [x] **True P2P:** Direct connection without detours.
-- [x] **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
-- [x] **Persistent ID:** Your ID remains the same even after a restart (stored in a small local file).
-- [x] **Voice Chat:** A voice connection is automatically established as soon as you connect.
-- [x] **Dark Mode:** A simple, modern design (inspired by Discord).
+*   🔔 **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
+*   🖌️ **Custom Icons:** Professional look with dedicated icons.
+*   👥 **1-on-1 Chat:** Connect directly with one friend at a time (Group chats planned for the future).
+*   🌐 **True P2P:** Direct connection without detours.
+*   🧹 **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
+*   🔑 **Persistent ID:** Your ID is saved locally so you can restart the app without losing it.
+*   📞 **Voice Chat:** A voice connection is automatically established as soon as you connect.
+*   🌙 **Dark Mode:** A simple, modern design (inspired by Discord).
 
 ---
 
 ## How it Works
+
 NullChat uses **WebRTC technology**. Instead of your messages running through a central server from Discord or WhatsApp, your PC establishes a **direct connection** to your friend's PC.
 
-A small signaling server (PeerJS Cloud) only helps the two PCs find each other on the internet ("handshake"). Once the connection is established, chat and voice flow directly from user to user.
+<details>
+<summary><strong>🤓 Technical Deep Dive (For Nerds)</strong></summary>
+
+### Under the Hood
+NullChat is an **Electron** application (Chromium + Node.js) that uses **PeerJS** for the networking layer.
+
+1.  **Signaling (Handshake):**
+    *   To find each other on the internet, both clients connect briefly to the public PeerJS Cloud signaling server.
+    *   They exchange **ICE Candidates** (IP addresses and ports) to figure out inevitable NAT traversal issues.
+    *   *Note:* No message content ever touches this signaling server. It only exchanges connection metadata.
+
+2.  **WebRTC Data Channel:**
+    *   Once the "handshake" is complete, a direct P2P data tunnel is established using `RTCPeerConnection`.
+    *   Text messages are sent via `RTCDataChannel`. They are end-to-end encrypted by default (WebRTC standard).
+
+3.  **Media Stream:**
+    *   Voice data uses `navigator.mediaDevices.getUserMedia()` and is streamed directly to the peer.
+
+4.  **Security Model:**
+    *   The app uses a strict **Context Isolation** model.
+    *   The renderer process (UI) has **no direct access** to Node.js APIs.
+    *   All system operations (like copying to clipboard or checking updates) go through a secure internal IPC bridge (`preload.js`).
+
+</details>
 
 ---
 
