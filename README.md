@@ -35,6 +35,8 @@ Since I'm currently working on a simple installer (or an .exe file), usage is cu
 ---
 
 ## Features & Current Status
+- [x] **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
+- [x] **Custom Icons:** Professional look with dedicated icons.
 - [x] **1-on-1 Chats:** Currently limited to **2 users** (you and one friend) at a time.
 - [x] **True P2P:** Direct connection without detours.
 - [x] **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
