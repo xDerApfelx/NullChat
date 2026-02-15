@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self';
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self';
                  script-src 'self' https://unpkg.com;
                  connect-src *;
                  media-src *;
@@ -12,11 +12,13 @@
   <title>NullChat</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
   <div id="app-container">
 
     <!-- ═══════════════════════ FRIENDS SIDEBAR ═══════════════════════ -->
+    <button class="sidebar-expand-btn" id="sidebar-expand-btn" title="Open contacts">▶</button>
     <aside id="friends-sidebar">
       <div class="sidebar-header">
         <span class="sidebar-title">Contacts</span>
@@ -48,7 +50,8 @@
 
         <div class="connect-section">
           <label for="friend-id-input">Enter Friend's ID</label>
-          <input type="text" id="friend-id-input" placeholder="Paste your friend's ID here…" autocomplete="off" spellcheck="false" />
+          <input type="text" id="friend-id-input" placeholder="Paste your friend's ID here…" autocomplete="off"
+            spellcheck="false" />
           <button class="connect-btn" id="connect-btn">Connect</button>
         </div>
 
@@ -88,7 +91,8 @@
     <div class="friend-modal">
       <h3>Add to Contacts</h3>
       <p class="friend-modal-id" id="friend-modal-id"></p>
-      <input type="text" id="friend-name-input" placeholder="Enter a name for this contact…" autocomplete="off" spellcheck="false" />
+      <input type="text" id="friend-name-input" placeholder="Enter a name for this contact…" autocomplete="off"
+        spellcheck="false" />
       <div class="friend-modal-actions">
         <button class="friend-cancel-btn" id="friend-cancel-btn">Cancel</button>
         <button class="friend-save-btn" id="friend-save-btn">Save</button>
@@ -116,4 +120,5 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="renderer.js"></script>
 </body>
+
 </html>

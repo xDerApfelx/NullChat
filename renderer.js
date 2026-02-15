@@ -18,6 +18,7 @@ const toastEl = document.getElementById('toast');
 // Sidebar elements
 const friendsSidebar = document.getElementById('friends-sidebar');
 const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarExpandBtn = document.getElementById('sidebar-expand-btn');
 const friendsListEl = document.getElementById('friends-list');
 const friendsEmpty = document.getElementById('friends-empty');
 const addFriendBtn = document.getElementById('add-friend-btn');
@@ -90,8 +91,10 @@ async function loadFriends() {
     // Restore sidebar state
     if (!friendsData.sidebarOpen) {
         friendsSidebar.classList.add('collapsed');
+        sidebarExpandBtn.classList.add('visible');
     } else {
         friendsSidebar.classList.remove('collapsed');
+        sidebarExpandBtn.classList.remove('visible');
     }
 }
 
@@ -433,10 +436,19 @@ disconnectBtn.addEventListener('click', () => {
 
 // ── Sidebar toggle ──────────────────────────────────────────────────────────────
 sidebarToggle.addEventListener('click', () => {
-    friendsSidebar.classList.toggle('collapsed');
-    friendsData.sidebarOpen = !friendsSidebar.classList.contains('collapsed');
+    friendsSidebar.classList.add('collapsed');
+    sidebarExpandBtn.classList.add('visible');
+    friendsData.sidebarOpen = false;
     saveFriends();
-    rlog.info(friendsData.sidebarOpen ? 'Sidebar opened' : 'Sidebar closed');
+    rlog.info('Sidebar closed');
+});
+
+sidebarExpandBtn.addEventListener('click', () => {
+    friendsSidebar.classList.remove('collapsed');
+    sidebarExpandBtn.classList.remove('visible');
+    friendsData.sidebarOpen = true;
+    saveFriends();
+    rlog.info('Sidebar opened');
 });
 
 // ── Add Friend Modal ────────────────────────────────────────────────────────────
