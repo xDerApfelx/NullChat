@@ -22,6 +22,8 @@ const sidebarExpandBtn = document.getElementById('sidebar-expand-btn');
 const friendsListEl = document.getElementById('friends-list');
 const friendsEmpty = document.getElementById('friends-empty');
 const addFriendBtn = document.getElementById('add-friend-btn');
+const sidebarCallHint = document.getElementById('sidebar-call-hint');
+const callHintName = document.getElementById('call-hint-name');
 
 // Add Friend Modal elements
 const friendOverlay = document.getElementById('friend-overlay');
@@ -47,6 +49,7 @@ let isMuted = false;
 let currentPeerId = null;
 let friendsData = { sidebarOpen: true, friends: [] };
 let pendingConn = null;     // Incoming connection waiting for accept/decline
+let ringingPeerId = null;   // Peer ID of the friend currently ringing
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -68,7 +71,7 @@ function startRinging() {
 
 ringtone.addEventListener('ended', () => {
     ringtoneLoops++;
-    if (ringtoneLoops < 3) {
+    if (ringtoneLoops < 2) {
         ringtone.currentTime = 0;
         ringtone.play().catch(() => { });
     }
@@ -94,12 +97,20 @@ function applyDefaultMute() {
 function highlightFriend(peerId, active) {
     const items = friendsListEl.querySelectorAll('.friend-item');
     items.forEach(item => {
-        // Match by the stored friend id in the data attribute
         if (item.dataset.friendId === peerId) {
             if (active) {
                 item.classList.add('ringing');
+                // Add phone emoji with shake if not already present
+                if (!item.querySelector('.friend-ring-icon')) {
+                    const icon = document.createElement('span');
+                    icon.className = 'friend-ring-icon';
+                    icon.textContent = '📞';
+                    item.insertBefore(icon, item.firstChild);
+                }
             } else {
                 item.classList.remove('ringing');
+                const icon = item.querySelector('.friend-ring-icon');
+                if (icon) icon.remove();
             }
         }
     });
@@ -107,7 +118,44 @@ function highlightFriend(peerId, active) {
 
 function clearAllRinging() {
     const items = friendsListEl.querySelectorAll('.friend-item.ringing');
-    items.forEach(item => item.classList.remove('ringing'));
+    items.forEach(item => {
+        item.classList.remove('ringing');
+        const icon = item.querySelector('.friend-ring-icon');
+        if (icon) icon.remove();
+    });
+}
+
+// ── Call hint helpers (sidebar collapsed notification) ───────────────────────────
+function showCallHint(name) {
+    callHintName.textContent = name;
+    sidebarCallHint.classList.remove('hidden');
+}
+
+function hideCallHint() {
+    sidebarCallHint.classList.add('hidden');
+    callHintName.textContent = '';
+}
+
+function updateCallUI() {
+    if (!ringingPeerId) {
+        hideCallHint();
+        return;
+    }
+    const name = getFriendName(ringingPeerId) || ringingPeerId.substring(0, 12);
+    if (friendsSidebar.classList.contains('collapsed')) {
+        // Sidebar closed → show call-hint bar next to expand button
+        showCallHint(name);
+    } else {
+        // Sidebar open → hide call-hint bar (sidebar item pulses instead)
+        hideCallHint();
+    }
+}
+
+function clearCallState() {
+    ringingPeerId = null;
+    stopRinging();
+    clearAllRinging();
+    hideCallHint();
 }
 
 // ── Toast helper ────────────────────────────────────────────────────────────────
@@ -411,11 +459,12 @@ async function init() {
 
         // Start ringing
         startRinging();
+        ringingPeerId = peerId;
 
         if (isFriend(peerId)) {
-            // Known friend → Sidebar pulse + toast, no modal
+            // Known friend → Sidebar pulse + call-hint, no modal
             highlightFriend(peerId, true);
-            showToast(`📞 ${name} is calling...`);
+            updateCallUI();
             rlog.info('Incoming connection from known friend, sidebar pulse active');
         } else {
             // Unknown → Full modal
@@ -528,6 +577,7 @@ sidebarToggle.addEventListener('click', () => {
     sidebarExpandBtn.classList.add('visible');
     friendsData.sidebarOpen = false;
     saveFriends();
+    updateCallUI();
     rlog.info('Sidebar closed');
 });
 
@@ -536,7 +586,15 @@ sidebarExpandBtn.addEventListener('click', () => {
     sidebarExpandBtn.classList.remove('visible');
     friendsData.sidebarOpen = true;
     saveFriends();
+    updateCallUI();
     rlog.info('Sidebar opened');
+});
+
+// Click on call-hint to accept the pending call
+sidebarCallHint.addEventListener('click', () => {
+    if (pendingConn) {
+        acceptPendingConnection();
+    }
 });
 
 // ── Add Friend Modal ────────────────────────────────────────────────────────────
@@ -597,8 +655,7 @@ friendNameInput.addEventListener('keydown', (e) => {
 async function acceptPendingConnection() {
     if (!pendingConn) return;
 
-    stopRinging();
-    clearAllRinging();
+    clearCallState();
     requestOverlay.style.display = 'none';
 
     wireConnection(pendingConn);
@@ -627,8 +684,7 @@ requestAcceptBtn.addEventListener('click', () => {
 });
 
 requestDeclineBtn.addEventListener('click', () => {
-    stopRinging();
-    clearAllRinging();
+    clearCallState();
     if (pendingConn) {
         pendingConn.close();
         pendingConn = null;

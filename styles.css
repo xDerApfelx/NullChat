@@ -1051,24 +1051,104 @@ body {
   transform: scale(0.96);
 }
 
-/* ── Police-Tape Mute Button ────────────────────────────────────────────────── */
-@keyframes policeTape {
+/* ── Shake Animation ────────────────────────────────────────────────────────── */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  15% {
+    transform: rotate(15deg);
+  }
+
+  30% {
+    transform: rotate(-12deg);
+  }
+
+  45% {
+    transform: rotate(10deg);
+  }
+
+  60% {
+    transform: rotate(-8deg);
+  }
+
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.call-hint-icon,
+.friend-ring-icon {
+  display: inline-block;
+  animation: shake 0.8s ease-in-out infinite;
+  font-size: 1.2em;
+  margin-right: 4px;
+}
+
+/* ── Sidebar Call Hint Bar ──────────────────────────────────────────────────── */
+.sidebar-call-hint {
+  position: fixed;
+  top: 12px;
+  left: 52px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid rgba(87, 242, 135, 0.3);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  z-index: 100;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.sidebar-call-hint:hover {
+  background: var(--bg-tertiary);
+}
+
+.sidebar-call-hint.hidden {
+  display: none;
+}
+
+.call-hint-name {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Police-Tape Mute Button (Flowing + Pulsing) ───────────────────────────── */
+@keyframes flowStripes {
   0% {
     background-position: 0 0;
   }
 
   100% {
-    background-position: 40px 0;
+    background-position: 56px 0;
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(237, 66, 69, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 22px rgba(237, 66, 69, 0.8);
   }
 }
 
 .mute-btn.muted {
   background: repeating-linear-gradient(-45deg,
-      #ed4245, #ed4245 10px,
-      #a12d2f 10px, #a12d2f 20px) !important;
-  background-size: 40px 40px !important;
-  animation: policeTape 2s linear infinite;
-  box-shadow: 0 0 14px rgba(237, 66, 69, 0.5);
+      #ed4245 0px, #ed4245 8px,
+      #8b1a1d 8px, #8b1a1d 16px) !important;
+  background-size: 56px 56px !important;
+  animation: flowStripes 1s linear infinite,
+    pulseGlow 1.5s ease-in-out infinite;
   color: #fff !important;
   font-weight: 700;
   border: none;
