@@ -37,10 +37,10 @@ NullChat comes as a standard Windows installer (`.exe`).
 ---
 
 ## Features & Current Status
-*   📞 **Connection Requests:** Incoming connections show an Accept/Decline prompt — nobody can pull you into a chat without your consent.
-*   🔔 **Smart Notifications:** Known friends trigger a pulsing sidebar highlight with a shaking 📞 emoji; when the sidebar is collapsed, a call-hint bar appears next to the expand button. Unknown callers see a full-screen modal.
-*   🎵 **Ringtone:** A subtle notification sound plays when someone calls you.
-*   🔇 **Mute Safety:** Calls start muted by default. An animated "police-tape" warning makes it impossible to forget you're muted.
+*   📞 **Smart Notifications:** Intelligent call handling. Known friends trigger a subtle, shaking sidebar hint; unknown callers activate a full-screen request modal.
+*   🛡️ **Privacy First:** Incoming connections require your approval. Nobody can force-join a call.
+*   🔇 **Mute Safety:** Calls start muted by default. A distinct pulsing visual warning ensures you never forget your microphone status.
+*   🎵 **Ringtone:** Soft audio notification for incoming calls.
 *   🫂 **Friends Sidebar:** Save your friends locally with custom nicknames for one-click connections.
 *   🔔 **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
 *   🛠️ **Debug Mode:** Developers can run multiple isolated instances using `npm run debug`.
