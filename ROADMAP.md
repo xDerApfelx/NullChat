@@ -30,6 +30,7 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v1.3.5:** Smart Notifications, Ringtone, Mute Safety & Default-Mute.
 - [x] **v1.3.1:** Reconnection Bug Fix & Stability Improvements.
 - [x] **v1.3.0:** Connection Requests (Accept/Decline incoming connections).
 - [x] **v1.2.1:** Sidebar UX Fixes (Expand Button).

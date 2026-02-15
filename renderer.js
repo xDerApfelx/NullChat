@@ -55,6 +55,61 @@ const rlog = {
     error: (msg) => window.electronAPI.log('error', msg)
 };
 
+// ── Ringtone ────────────────────────────────────────────────────────────────────
+const ringtone = new Audio('assets/ringtone.mp3');
+ringtone.volume = 0.25;
+let ringtoneLoops = 0;
+
+function startRinging() {
+    ringtoneLoops = 0;
+    ringtone.currentTime = 0;
+    ringtone.play().catch(() => { });
+}
+
+ringtone.addEventListener('ended', () => {
+    ringtoneLoops++;
+    if (ringtoneLoops < 3) {
+        ringtone.currentTime = 0;
+        ringtone.play().catch(() => { });
+    }
+});
+
+function stopRinging() {
+    ringtone.pause();
+    ringtone.currentTime = 0;
+    ringtoneLoops = 0;
+}
+
+// ── Default-mute helper ─────────────────────────────────────────────────────────
+function applyDefaultMute() {
+    if (localStream) {
+        localStream.getAudioTracks().forEach(t => t.enabled = false);
+    }
+    isMuted = true;
+    muteBtn.textContent = '🔇 Unmute';
+    muteBtn.classList.add('muted');
+}
+
+// ── Sidebar highlight helper ────────────────────────────────────────────────────
+function highlightFriend(peerId, active) {
+    const items = friendsListEl.querySelectorAll('.friend-item');
+    items.forEach(item => {
+        // Match by the stored friend id in the data attribute
+        if (item.dataset.friendId === peerId) {
+            if (active) {
+                item.classList.add('ringing');
+            } else {
+                item.classList.remove('ringing');
+            }
+        }
+    });
+}
+
+function clearAllRinging() {
+    const items = friendsListEl.querySelectorAll('.friend-item.ringing');
+    items.forEach(item => item.classList.remove('ringing'));
+}
+
 // ── Toast helper ────────────────────────────────────────────────────────────────
 function showToast(message, type = '') {
     toastEl.textContent = message;
@@ -134,6 +189,7 @@ function renderFriendsList() {
     friendsData.friends.forEach(friend => {
         const item = document.createElement('div');
         item.className = 'friend-item';
+        item.dataset.friendId = friend.id;
 
         const avatar = document.createElement('div');
         avatar.className = 'friend-item-avatar';
@@ -148,9 +204,14 @@ function renderFriendsList() {
         deleteBtn.textContent = '✕';
         deleteBtn.title = 'Remove contact';
 
-        // Click on item → connect
+        // Click on item → connect or accept pending call
         item.addEventListener('click', (e) => {
-            if (e.target === deleteBtn) return; // don't connect when deleting
+            if (e.target === deleteBtn) return;
+            // If this friend is ringing, accept the pending connection
+            if (pendingConn && pendingConn.peer === friend.id) {
+                acceptPendingConnection();
+                return;
+            }
             friendIdInput.value = friend.id;
             connectBtn.click();
         });
@@ -237,8 +298,9 @@ async function initiateVoiceCall(friendId) {
     activeCall = peer.call(friendId, stream);
     activeCall.on('stream', playRemoteStream);
     activeCall.on('close', () => { activeCall = null; });
-    addSystemMessage('🎤 Voice call active');
-    rlog.info('Outgoing voice call started');
+    applyDefaultMute();
+    addSystemMessage('🎤 Voice call active (muted by default)');
+    rlog.info('Outgoing voice call started (muted by default)');
 }
 
 function answerCall(incomingCall) {
@@ -251,8 +313,9 @@ function answerCall(incomingCall) {
         activeCall = incomingCall;
         activeCall.on('stream', playRemoteStream);
         activeCall.on('close', () => { activeCall = null; });
-        addSystemMessage('🎤 Voice call active');
-        rlog.info('Incoming voice call answered');
+        applyDefaultMute();
+        addSystemMessage('🎤 Voice call active (muted by default)');
+        rlog.info('Incoming voice call answered (muted by default)');
     });
 }
 
@@ -341,21 +404,26 @@ async function init() {
             return;
         }
 
-        // Store pending connection and show request modal
+        // Store pending connection
         pendingConn = incomingConn;
         const peerId = incomingConn.peer;
         const name = getFriendName(peerId);
 
-        if (name) {
-            requestModalName.textContent = name;
-            requestModalId.textContent = peerId;
+        // Start ringing
+        startRinging();
+
+        if (isFriend(peerId)) {
+            // Known friend → Sidebar pulse + toast, no modal
+            highlightFriend(peerId, true);
+            showToast(`📞 ${name} is calling...`);
+            rlog.info('Incoming connection from known friend, sidebar pulse active');
         } else {
+            // Unknown → Full modal
             requestModalName.textContent = peerId.substring(0, 12) + '…';
             requestModalId.textContent = peerId;
+            requestOverlay.style.display = 'flex';
+            rlog.info('Incoming connection from unknown peer, showing modal');
         }
-
-        requestOverlay.style.display = 'flex';
-        rlog.info('Incoming connection request received, awaiting user decision');
     });
 
     // ── Incoming voice calls ──
@@ -526,14 +594,22 @@ friendNameInput.addEventListener('keydown', (e) => {
 });
 
 // ── Connection Request Accept/Decline ───────────────────────────────────────────
-requestAcceptBtn.addEventListener('click', () => {
+async function acceptPendingConnection() {
     if (!pendingConn) return;
+
+    stopRinging();
+    clearAllRinging();
     requestOverlay.style.display = 'none';
 
     wireConnection(pendingConn);
 
+    // Initialize audio stream and apply default-mute
+    const stream = await getLocalAudio();
+    if (stream) {
+        applyDefaultMute();
+    }
+
     if (pendingConn.open) {
-        // Connection is already open
         showChat(pendingConn.peer);
         rlog.info('Incoming connection accepted');
     } else {
@@ -544,9 +620,15 @@ requestAcceptBtn.addEventListener('click', () => {
     }
 
     pendingConn = null;
+}
+
+requestAcceptBtn.addEventListener('click', () => {
+    acceptPendingConnection();
 });
 
 requestDeclineBtn.addEventListener('click', () => {
+    stopRinging();
+    clearAllRinging();
     if (pendingConn) {
         pendingConn.close();
         pendingConn = null;

@@ -1050,3 +1050,47 @@ body {
 .request-accept-btn:active {
   transform: scale(0.96);
 }
+
+/* ── Police-Tape Mute Button ────────────────────────────────────────────────── */
+@keyframes policeTape {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+.mute-btn.muted {
+  background: repeating-linear-gradient(-45deg,
+      #ed4245, #ed4245 10px,
+      #a12d2f 10px, #a12d2f 20px) !important;
+  background-size: 40px 40px !important;
+  animation: policeTape 2s linear infinite;
+  box-shadow: 0 0 14px rgba(237, 66, 69, 0.5);
+  color: #fff !important;
+  font-weight: 700;
+  border: none;
+}
+
+/* ── Friend Ringing Pulse (Sidebar) ─────────────────────────────────────────── */
+@keyframes friendPulse {
+
+  0%,
+  100% {
+    background: var(--bg-tertiary);
+    box-shadow: none;
+  }
+
+  50% {
+    background: rgba(87, 242, 135, 0.2);
+    box-shadow: 0 0 12px rgba(87, 242, 135, 0.3);
+  }
+}
+
+.friend-item.ringing {
+  animation: friendPulse 1.2s ease-in-out infinite;
+  cursor: pointer;
+  border-left: 3px solid var(--success);
+}
