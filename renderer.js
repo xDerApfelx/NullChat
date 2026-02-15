@@ -40,8 +40,8 @@ const requestAcceptBtn = document.getElementById('request-accept-btn');
 const requestDeclineBtn = document.getElementById('request-decline-btn');
 
 // ── Configuration ───────────────────────────────────────────────────────────────
-const CALL_TIMEOUT_MS = 30000;  // Auto-dismiss incoming call UI after 30 seconds
-const SAVE_DEBOUNCE_MS = 1000;  // Debounce delay for sidebar state saves
+const CALL_TIMEOUT_MS = 90000;  // Auto-dismiss incoming call UI after 30 seconds
+const SAVE_DEBOUNCE_MS = 5000;  // Debounce delay for sidebar state saves
 
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
