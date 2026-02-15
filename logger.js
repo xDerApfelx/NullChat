@@ -28,15 +28,34 @@ function init(userDataPath) {
         fs.mkdirSync(logDir, { recursive: true });
     }
 
-    // Rotate: rename current log → prev log
-    const prevLog = path.join(logDir, 'nullchat.prev.log');
+    // ── Rotation & Cleanup ───────────────────────────────────────────────────────
     try {
+        // 1. Rename last session's log if it exists
         if (fs.existsSync(logFile)) {
-            if (fs.existsSync(prevLog)) fs.unlinkSync(prevLog);
-            fs.renameSync(logFile, prevLog);
+            const stats = fs.statSync(logFile);
+            const ts = new Date(stats.mtime).toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const rotatedName = path.join(logDir, `nullchat-${ts}.log`);
+            fs.renameSync(logFile, rotatedName);
         }
-    } catch (_) {
-        // rotation failed — not critical, continue
+
+        // 2. Cleanup old logs (older than 7 days OR more than 10 files)
+        const files = fs.readdirSync(logDir)
+            .filter(f => f.startsWith('nullchat-') && f.endsWith('.log'))
+            .map(f => ({ name: f, path: path.join(logDir, f), time: fs.statSync(path.join(logDir, f)).mtimeMs }))
+            .sort((a, b) => b.time - a.time); // Newest first
+
+        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+
+        files.forEach((file, index) => {
+            const isTooOld = file.time < oneWeekAgo;
+            const isTooMany = index >= 10; // Keep only last 10 historical logs
+
+            if (isTooOld || isTooMany) {
+                fs.unlinkSync(file.path);
+            }
+        });
+    } catch (err) {
+        // rotation/cleanup failed — not critical, continue
     }
 
     // Start periodic flush
