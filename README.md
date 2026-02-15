@@ -37,6 +37,7 @@ NullChat comes as a standard Windows installer (`.exe`).
 ---
 
 ## Features & Current Status
+*   📞 **Connection Requests:** Incoming connections show an Accept/Decline prompt — nobody can pull you into a chat without your consent.
 *   🫂 **Friends Sidebar:** Save your friends locally with custom nicknames for one-click connections.
 *   🔔 **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
 *   🛠️ **Debug Mode:** Developers can run multiple isolated instances using `npm run debug`.
@@ -45,7 +46,7 @@ NullChat comes as a standard Windows installer (`.exe`).
 *   🌐 **True P2P:** Direct connection via WebRTC.
 *   🧹 **No Cloud Data:** Chat history exists only in memory. Friends list is stored locally on your device.
 *   🔑 **Persistent ID:** Your ID is saved locally so you can restart the app without losing it.
-*   📞 **Voice Chat:** A voice connection is automatically established.
+*   📞 **Voice Chat:** A voice connection is automatically established once you accept.
 *   🌙 **Dark Mode:** A simple, modern design.
 
 ---

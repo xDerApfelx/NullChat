@@ -3,8 +3,7 @@
 Welcome to the future plans for **NullChat**!
 
 ## 🐛 Known Issues
-- [ ] **Reconnection Bug:** Currently, you cannot immediately reconnect to the same peer after disconnecting.
-  - *Workaround:* Restart the application to reconnect.
+- No known issues at this time! 🎉
 
 ## 🧹 Essentials & Maintenance
 *Things that always need love and care.*
@@ -31,6 +30,8 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v1.3.1:** Reconnection Bug Fix & Stability Improvements.
+- [x] **v1.3.0:** Connection Requests (Accept/Decline incoming connections).
 - [x] **v1.2.1:** Sidebar UX Fixes (Expand Button).
 - [x] **v1.2.0:** Friends Sidebar & Local Contact Management.
 - [x] **v1.1.2:** Markdown Changelogs & Release Insights.

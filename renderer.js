@@ -30,6 +30,13 @@ const friendNameInput = document.getElementById('friend-name-input');
 const friendSaveBtn = document.getElementById('friend-save-btn');
 const friendCancelBtn = document.getElementById('friend-cancel-btn');
 
+// Connection Request Modal elements
+const requestOverlay = document.getElementById('request-overlay');
+const requestModalName = document.getElementById('request-modal-name');
+const requestModalId = document.getElementById('request-modal-id');
+const requestAcceptBtn = document.getElementById('request-accept-btn');
+const requestDeclineBtn = document.getElementById('request-decline-btn');
+
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
 let conn = null;
@@ -39,6 +46,7 @@ let myId = '';
 let isMuted = false;
 let currentPeerId = null;
 let friendsData = { sidebarOpen: true, friends: [] };
+let pendingConn = null;     // Incoming connection waiting for accept/decline
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -328,22 +336,36 @@ async function init() {
     // ── Incoming data connections ──
     peer.on('connection', (incomingConn) => {
         if (conn && conn.open) {
-            // Already connected to someone; reject
+            // Already connected to someone; reject silently
             incomingConn.close();
             return;
         }
 
-        wireConnection(incomingConn);
+        // Store pending connection and show request modal
+        pendingConn = incomingConn;
+        const peerId = incomingConn.peer;
+        const name = getFriendName(peerId);
 
-        incomingConn.on('open', () => {
-            showChat(incomingConn.peer);
-            rlog.info('Incoming peer connection established');
-        });
+        if (name) {
+            requestModalName.textContent = name;
+            requestModalId.textContent = peerId;
+        } else {
+            requestModalName.textContent = peerId.substring(0, 12) + '…';
+            requestModalId.textContent = peerId;
+        }
+
+        requestOverlay.style.display = 'flex';
+        rlog.info('Incoming connection request received, awaiting user decision');
     });
 
     // ── Incoming voice calls ──
     peer.on('call', (incomingCall) => {
-        answerCall(incomingCall);
+        // Only answer if we are in an active chat
+        if (conn && conn.open) {
+            answerCall(incomingCall);
+        } else {
+            incomingCall.close();
+        }
     });
 }
 
@@ -429,8 +451,6 @@ disconnectBtn.addEventListener('click', () => {
     rlog.info('User disconnected manually');
     cleanup();
     showLogin();
-    // Re-initialise peer so we can accept new connections
-    init();
     showToast('Disconnected', 'success');
 });
 
@@ -503,6 +523,37 @@ friendOverlay.addEventListener('click', (e) => {
 
 friendNameInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') friendSaveBtn.click();
+});
+
+// ── Connection Request Accept/Decline ───────────────────────────────────────────
+requestAcceptBtn.addEventListener('click', () => {
+    if (!pendingConn) return;
+    requestOverlay.style.display = 'none';
+
+    wireConnection(pendingConn);
+
+    if (pendingConn.open) {
+        // Connection is already open
+        showChat(pendingConn.peer);
+        rlog.info('Incoming connection accepted');
+    } else {
+        pendingConn.on('open', () => {
+            showChat(pendingConn.peer);
+            rlog.info('Incoming connection accepted');
+        });
+    }
+
+    pendingConn = null;
+});
+
+requestDeclineBtn.addEventListener('click', () => {
+    if (pendingConn) {
+        pendingConn.close();
+        pendingConn = null;
+    }
+    requestOverlay.style.display = 'none';
+    rlog.info('Incoming connection declined');
+    showToast('Connection declined', 'success');
 });
 
 // ── Start ───────────────────────────────────────────────────────────────────────
