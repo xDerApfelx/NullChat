@@ -7,6 +7,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
     onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
 
+    // Friends list
+    getFriends: () => ipcRenderer.invoke('get-friends'),
+    saveFriends: (data) => ipcRenderer.invoke('save-friends', data),
+
     // Anonymous logger relay — sends log entries to the main process
     log: (level, message) => ipcRenderer.send('log-from-renderer', level, message)
 });

@@ -14,52 +14,85 @@
 </head>
 <body>
 
-  <!-- ════════════════════════════ LOGIN VIEW ════════════════════════════ -->
-  <div id="login-view">
-    <!-- Update banner -->
-    <div class="update-banner" id="update-banner" style="display:none;">
-      🔔 New update available: <span id="update-version"></span>
-    </div>
+  <div id="app-container">
 
-    <h1>🔒 NullChat</h1>
-    <p class="subtitle">Secure peer-to-peer messaging &amp; voice</p>
+    <!-- ═══════════════════════ FRIENDS SIDEBAR ═══════════════════════ -->
+    <aside id="friends-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Contacts</span>
+        <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Toggle sidebar">◀</button>
+      </div>
+      <div class="friends-list" id="friends-list">
+        <p class="friends-empty" id="friends-empty">No contacts yet</p>
+      </div>
+    </aside>
 
-    <div class="id-display">
-      <label>My ID</label>
-      <span class="id-text" id="my-id">Loading…</span>
-      <button class="copy-btn" id="copy-btn">Copy</button>
-    </div>
+    <!-- ══════════════════════ MAIN CONTENT AREA ══════════════════════ -->
+    <main id="main-content">
 
-    <div class="connect-section">
-      <label for="friend-id-input">Enter Friend's ID</label>
-      <input type="text" id="friend-id-input" placeholder="Paste your friend's ID here…" autocomplete="off" spellcheck="false" />
-      <button class="connect-btn" id="connect-btn">Connect</button>
-    </div>
+      <!-- ════════════════════════ LOGIN VIEW ════════════════════════ -->
+      <div id="login-view">
+        <!-- Update banner -->
+        <div class="update-banner" id="update-banner" style="display:none;">
+          🔔 New update available: <span id="update-version"></span>
+        </div>
 
-    <p class="status-text" id="status-text"></p>
-  </div>
+        <h1>🔒 NullChat</h1>
+        <p class="subtitle">Secure peer-to-peer messaging &amp; voice</p>
 
-  <!-- ════════════════════════════ CHAT VIEW ═════════════════════════════ -->
-  <div id="chat-view">
-    <div class="chat-header">
-      <div class="peer-info">
-        <div class="peer-avatar" id="peer-avatar">?</div>
-        <div>
-          <div class="peer-name" id="peer-name">Friend</div>
-          <div class="peer-status">● Connected</div>
+        <div class="id-display">
+          <label>My ID</label>
+          <span class="id-text" id="my-id">Loading…</span>
+          <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+
+        <div class="connect-section">
+          <label for="friend-id-input">Enter Friend's ID</label>
+          <input type="text" id="friend-id-input" placeholder="Paste your friend's ID here…" autocomplete="off" spellcheck="false" />
+          <button class="connect-btn" id="connect-btn">Connect</button>
+        </div>
+
+        <p class="status-text" id="status-text"></p>
+      </div>
+
+      <!-- ════════════════════════ CHAT VIEW ═════════════════════════ -->
+      <div id="chat-view">
+        <div class="chat-header">
+          <div class="peer-info">
+            <div class="peer-avatar" id="peer-avatar">?</div>
+            <div>
+              <div class="peer-name" id="peer-name">Friend</div>
+              <div class="peer-status">● Connected</div>
+            </div>
+            <button class="add-friend-btn" id="add-friend-btn" title="Add to contacts">+</button>
+          </div>
+          <div class="controls">
+            <button class="mute-btn" id="mute-btn">🎤 Mute</button>
+            <button class="disconnect-btn" id="disconnect-btn">Disconnect</button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="chat-input-bar">
+          <input type="text" id="msg-input" placeholder="Type a message…" autocomplete="off" spellcheck="false" />
+          <button class="send-btn" id="send-btn">Send</button>
         </div>
       </div>
-      <div class="controls">
-        <button class="mute-btn" id="mute-btn">🎤 Mute</button>
-        <button class="disconnect-btn" id="disconnect-btn">Disconnect</button>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════ ADD FRIEND MODAL ═══════════════════════ -->
+  <div class="friend-overlay" id="friend-overlay" style="display:none;">
+    <div class="friend-modal">
+      <h3>Add to Contacts</h3>
+      <p class="friend-modal-id" id="friend-modal-id"></p>
+      <input type="text" id="friend-name-input" placeholder="Enter a name for this contact…" autocomplete="off" spellcheck="false" />
+      <div class="friend-modal-actions">
+        <button class="friend-cancel-btn" id="friend-cancel-btn">Cancel</button>
+        <button class="friend-save-btn" id="friend-save-btn">Save</button>
       </div>
-    </div>
-
-    <div class="chat-messages" id="chat-messages"></div>
-
-    <div class="chat-input-bar">
-      <input type="text" id="msg-input" placeholder="Type a message…" autocomplete="off" spellcheck="false" />
-      <button class="send-btn" id="send-btn">Send</button>
     </div>
   </div>
 

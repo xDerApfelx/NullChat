@@ -169,6 +169,31 @@ ipcMain.handle('open-external', (_event, url) => {
     return true;
 });
 
+// ── Friends list persistence ────────────────────────────────────────────────────
+const FRIENDS_PATH = path.join(app.getPath('userData'), 'friends.json');
+
+ipcMain.handle('get-friends', () => {
+    try {
+        if (fs.existsSync(FRIENDS_PATH)) {
+            return JSON.parse(fs.readFileSync(FRIENDS_PATH, 'utf-8'));
+        }
+    } catch (_) {
+        log.warn('Friends file corrupted, returning empty list');
+    }
+    return { sidebarOpen: true, friends: [] };
+});
+
+ipcMain.handle('save-friends', (_event, data) => {
+    try {
+        fs.writeFileSync(FRIENDS_PATH, JSON.stringify(data, null, 2), 'utf-8');
+        log.info('Friends list saved');
+        return true;
+    } catch (err) {
+        log.error('Failed to save friends: ' + err.message);
+        return false;
+    }
+});
+
 // Renderer log relay — accept anonymous log entries from the renderer process
 ipcMain.on('log-from-renderer', (_event, level, message) => {
     if (level === 'error') log.error(`[renderer] ${message}`);

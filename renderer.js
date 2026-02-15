@@ -12,8 +12,22 @@ const sendBtn = document.getElementById('send-btn');
 const muteBtn = document.getElementById('mute-btn');
 const disconnectBtn = document.getElementById('disconnect-btn');
 const peerAvatar = document.getElementById('peer-avatar');
-const peerName = document.getElementById('peer-name');
+const peerNameEl = document.getElementById('peer-name');
 const toastEl = document.getElementById('toast');
+
+// Sidebar elements
+const friendsSidebar = document.getElementById('friends-sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const friendsListEl = document.getElementById('friends-list');
+const friendsEmpty = document.getElementById('friends-empty');
+const addFriendBtn = document.getElementById('add-friend-btn');
+
+// Add Friend Modal elements
+const friendOverlay = document.getElementById('friend-overlay');
+const friendModalId = document.getElementById('friend-modal-id');
+const friendNameInput = document.getElementById('friend-name-input');
+const friendSaveBtn = document.getElementById('friend-save-btn');
+const friendCancelBtn = document.getElementById('friend-cancel-btn');
 
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
@@ -22,6 +36,8 @@ let localStream = null;
 let activeCall = null;
 let myId = '';
 let isMuted = false;
+let currentPeerId = null;
+let friendsData = { sidebarOpen: true, friends: [] };
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -67,20 +83,110 @@ function addSystemMessage(text) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// ── Friends helpers ─────────────────────────────────────────────────────────────
+async function loadFriends() {
+    friendsData = await window.electronAPI.getFriends();
+    renderFriendsList();
+    // Restore sidebar state
+    if (!friendsData.sidebarOpen) {
+        friendsSidebar.classList.add('collapsed');
+    } else {
+        friendsSidebar.classList.remove('collapsed');
+    }
+}
+
+async function saveFriends() {
+    await window.electronAPI.saveFriends(friendsData);
+}
+
+function getFriendName(peerId) {
+    const friend = friendsData.friends.find(f => f.id === peerId);
+    return friend ? friend.name : null;
+}
+
+function isFriend(peerId) {
+    return friendsData.friends.some(f => f.id === peerId);
+}
+
+function renderFriendsList() {
+    // Clear dynamic items (keep the empty message element)
+    const items = friendsListEl.querySelectorAll('.friend-item');
+    items.forEach(i => i.remove());
+
+    if (friendsData.friends.length === 0) {
+        friendsEmpty.style.display = 'block';
+        return;
+    }
+
+    friendsEmpty.style.display = 'none';
+
+    friendsData.friends.forEach(friend => {
+        const item = document.createElement('div');
+        item.className = 'friend-item';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'friend-item-avatar';
+        avatar.textContent = friend.name[0].toUpperCase();
+
+        const name = document.createElement('span');
+        name.className = 'friend-item-name';
+        name.textContent = friend.name;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'friend-item-delete';
+        deleteBtn.textContent = '✕';
+        deleteBtn.title = 'Remove contact';
+
+        // Click on item → connect
+        item.addEventListener('click', (e) => {
+            if (e.target === deleteBtn) return; // don't connect when deleting
+            friendIdInput.value = friend.id;
+            connectBtn.click();
+        });
+
+        // Delete friend
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            friendsData.friends = friendsData.friends.filter(f => f.id !== friend.id);
+            saveFriends();
+            renderFriendsList();
+            rlog.info('Friend removed from contacts');
+            showToast('Contact removed', 'success');
+        });
+
+        item.appendChild(avatar);
+        item.appendChild(name);
+        item.appendChild(deleteBtn);
+        friendsListEl.appendChild(item);
+    });
+}
+
 // ── View switching ──────────────────────────────────────────────────────────────
 function showChat(friendId) {
-    const short = friendId.substring(0, 8);
-    peerAvatar.textContent = short[0].toUpperCase();
-    peerName.textContent = short + '…';
+    currentPeerId = friendId;
+    const friendName = getFriendName(friendId);
+    const displayName = friendName || friendId.substring(0, 8) + '…';
+
+    peerAvatar.textContent = displayName[0].toUpperCase();
+    peerNameEl.textContent = displayName;
+
+    // Show/hide the [+] button based on whether this peer is already a friend
+    if (isFriend(friendId)) {
+        addFriendBtn.classList.add('hidden');
+    } else {
+        addFriendBtn.classList.remove('hidden');
+    }
 
     loginView.style.display = 'none';
     chatView.style.display = 'flex';
 
-    addSystemMessage('Connected to ' + friendId);
+    const connectMsg = friendName ? `Connected to ${friendName}` : `Connected to ${friendId}`;
+    addSystemMessage(connectMsg);
     msgInput.focus();
 }
 
 function showLogin() {
+    currentPeerId = null;
     chatView.style.display = 'none';
     loginView.style.display = 'flex';
     chatMessages.innerHTML = '';
@@ -325,8 +431,71 @@ disconnectBtn.addEventListener('click', () => {
     showToast('Disconnected', 'success');
 });
 
+// ── Sidebar toggle ──────────────────────────────────────────────────────────────
+sidebarToggle.addEventListener('click', () => {
+    friendsSidebar.classList.toggle('collapsed');
+    friendsData.sidebarOpen = !friendsSidebar.classList.contains('collapsed');
+    saveFriends();
+    rlog.info(friendsData.sidebarOpen ? 'Sidebar opened' : 'Sidebar closed');
+});
+
+// ── Add Friend Modal ────────────────────────────────────────────────────────────
+addFriendBtn.addEventListener('click', () => {
+    if (!currentPeerId) return;
+    friendModalId.textContent = currentPeerId;
+    friendNameInput.value = '';
+    friendOverlay.style.display = 'flex';
+    friendNameInput.focus();
+});
+
+friendSaveBtn.addEventListener('click', () => {
+    const name = friendNameInput.value.trim();
+    if (!name) {
+        friendNameInput.style.borderColor = '#ed4245';
+        setTimeout(() => { friendNameInput.style.borderColor = 'transparent'; }, 1500);
+        return;
+    }
+    if (!currentPeerId) return;
+
+    // Add or update friend
+    const existing = friendsData.friends.find(f => f.id === currentPeerId);
+    if (existing) {
+        existing.name = name;
+    } else {
+        friendsData.friends.push({ id: currentPeerId, name: name });
+    }
+
+    saveFriends();
+    renderFriendsList();
+
+    // Update chat header with the new name
+    peerNameEl.textContent = name;
+    peerAvatar.textContent = name[0].toUpperCase();
+    addFriendBtn.classList.add('hidden');
+
+    // Close modal
+    friendOverlay.style.display = 'none';
+    rlog.info('Friend added to contacts');
+    showToast('Contact saved!', 'success');
+});
+
+friendCancelBtn.addEventListener('click', () => {
+    friendOverlay.style.display = 'none';
+});
+
+friendOverlay.addEventListener('click', (e) => {
+    if (e.target === friendOverlay) {
+        friendOverlay.style.display = 'none';
+    }
+});
+
+friendNameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') friendSaveBtn.click();
+});
+
 // ── Start ───────────────────────────────────────────────────────────────────────
 init();
+loadFriends();
 
 // ── Update notification ─────────────────────────────────────────────────────────
 const updateBanner = document.getElementById('update-banner');
