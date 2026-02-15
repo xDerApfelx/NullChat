@@ -4,10 +4,21 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const log = require('./logger');
 
+// ── Debug Mode Setup ────────────────────────────────────────────────────────────
+const isDebugInstance = process.argv.includes('--debug-instance');
+if (isDebugInstance) {
+    const debugPath = path.join(app.getPath('userData'), 'debug-instance');
+    // Ensure debug dir exists
+    if (!fs.existsSync(debugPath)) {
+        fs.mkdirSync(debugPath, { recursive: true });
+    }
+    app.setPath('userData', debugPath);
+}
+
 // ── Initialise logger early ─────────────────────────────────────────────────────
 log.init(app.getPath('userData'));
 log.installCrashHandlers();
-log.info(`App starting (v${app.getVersion()})`);
+log.info(`App starting (v${app.getVersion()}) ${isDebugInstance ? '[DEBUG INSTANCE]' : ''}`);
 
 // ── Config helpers ──────────────────────────────────────────────────────────────
 const CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
@@ -123,6 +134,9 @@ function createWindow() {
     mainWindow.loadFile('index.html');
 
     mainWindow.once('ready-to-show', () => {
+        if (isDebugInstance) {
+            mainWindow.setTitle('NullChat (DEBUG)');
+        }
         mainWindow.show();
         log.info('Main window visible');
         checkForUpdates();
