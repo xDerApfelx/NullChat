@@ -31,6 +31,8 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v1.2.1:** Sidebar UX Fixes (Expand Button).
+- [x] **v1.2.0:** Friends Sidebar & Local Contact Management.
 - [x] **v1.1.2:** Markdown Changelogs & Release Insights.
 - [x] **v1.1.1:** Anonymous Logging System & Troubleshooting.
 - [x] **v1.1.0:** Auto-Update System via GitHub API.

@@ -28,21 +28,25 @@ NullChat comes as a standard Windows installer (`.exe`).
 
 ## User Guide
 1. **Share ID:** When you start the program, you will see your personal ID.
-2. **Send to Friend:** Share this ID with a friend securely (e.g., via Signal or in person). NullChat does not store a friend list.
-3. **Connect:** Your friend enters your ID and clicks "Connect."
+2. **Send to Friend:** Share this ID with a friend securely.
+3. **Connect:**
+   - **Method A:** Enter the ID and click "Connect".
+   - **Method B (New):** Save them as a friend! Click the `+` in the chat header to add them to your sidebar with a nickname. Next time, just click their name in the sidebar.
 4. **Chat & Speak:** Once connected, text and voice are live.
 
 ---
 
 ## Features & Current Status
+*   🫂 **Friends Sidebar:** Save your friends locally with custom nicknames for one-click connections.
 *   🔔 **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
+*   🛠️ **Debug Mode:** Developers can run multiple isolated instances using `npm run debug`.
 *   🖌️ **Custom Icons:** Professional look with dedicated icons.
-*   👥 **1-on-1 Chat:** Connect directly with one friend at a time (Group chats planned for the future).
-*   🌐 **True P2P:** Direct connection without detours.
-*   🧹 **No Persistence:** Chat history exists only in memory. As soon as the window is closed, everything is gone.
+*   👥 **1-on-1 Chat:** Connect directly with one friend at a time.
+*   🌐 **True P2P:** Direct connection via WebRTC.
+*   🧹 **No Cloud Data:** Chat history exists only in memory. Friends list is stored locally on your device.
 *   🔑 **Persistent ID:** Your ID is saved locally so you can restart the app without losing it.
-*   📞 **Voice Chat:** A voice connection is automatically established as soon as you connect.
-*   🌙 **Dark Mode:** A simple, modern design (inspired by Discord).
+*   📞 **Voice Chat:** A voice connection is automatically established.
+*   🌙 **Dark Mode:** A simple, modern design.
 
 ---
 
