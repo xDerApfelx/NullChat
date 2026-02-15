@@ -134,9 +134,10 @@ function createWindow() {
     mainWindow.loadFile('index.html');
 
     mainWindow.once('ready-to-show', () => {
-        if (isDebugInstance) {
-            mainWindow.setTitle('NullChat (DEBUG)');
-        }
+        const version = app.getVersion();
+        const rootTitle = `NullChat ${version}`;
+        mainWindow.setTitle(isDebugInstance ? `${rootTitle} [DEBUG]` : rootTitle);
+
         mainWindow.show();
         log.info('Main window visible');
         checkForUpdates();
