@@ -150,8 +150,11 @@ function createWindow() {
 }
 
 // ── IPC handlers ────────────────────────────────────────────────────────────────
+// Cache user ID at startup (avoid re-reading config on every IPC call)
+const cachedUserId = loadOrCreateUserId();
+
 ipcMain.handle('get-user-id', () => {
-    return loadOrCreateUserId();
+    return cachedUserId;
 });
 
 ipcMain.handle('copy-to-clipboard', (_event, text) => {
@@ -165,8 +168,13 @@ ipcMain.handle('get-app-version', () => {
 });
 
 ipcMain.handle('open-external', (_event, url) => {
-    log.info('Opening external URL in browser');
-    shell.openExternal(url);
+    // Only allow GitHub URLs for security
+    if (typeof url === 'string' && url.startsWith('https://github.com/')) {
+        log.info('Opening external URL in browser');
+        shell.openExternal(url);
+    } else {
+        log.warn('Blocked external URL: ' + url);
+    }
     return true;
 });
 

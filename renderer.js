@@ -39,10 +39,15 @@ const requestModalId = document.getElementById('request-modal-id');
 const requestAcceptBtn = document.getElementById('request-accept-btn');
 const requestDeclineBtn = document.getElementById('request-decline-btn');
 
+// ── Configuration ───────────────────────────────────────────────────────────────
+const CALL_TIMEOUT_MS = 30000;  // Auto-dismiss incoming call UI after 30 seconds
+const SAVE_DEBOUNCE_MS = 1000;  // Debounce delay for sidebar state saves
+
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
 let conn = null;
 let localStream = null;
+let remoteAudio = null;     // Remote audio element (cleaned up on disconnect)
 let activeCall = null;
 let myId = '';
 let isMuted = false;
@@ -50,6 +55,8 @@ let currentPeerId = null;
 let friendsData = { sidebarOpen: true, friends: [] };
 let pendingConn = null;     // Incoming connection waiting for accept/decline
 let ringingPeerId = null;   // Peer ID of the friend currently ringing
+let callTimeoutId = null;   // Timer for auto-dismissing unanswered calls
+let saveDebounceId = null;  // Timer for debounced friend saves
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -156,6 +163,10 @@ function clearCallState() {
     stopRinging();
     clearAllRinging();
     hideCallHint();
+    if (callTimeoutId) {
+        clearTimeout(callTimeoutId);
+        callTimeoutId = null;
+    }
 }
 
 // ── Toast helper ────────────────────────────────────────────────────────────────
@@ -211,6 +222,15 @@ async function loadFriends() {
 
 async function saveFriends() {
     await window.electronAPI.saveFriends(friendsData);
+}
+
+// Debounced version — for frequent state changes like sidebar toggling
+function saveFriendsDebounced() {
+    if (saveDebounceId) clearTimeout(saveDebounceId);
+    saveDebounceId = setTimeout(() => {
+        saveFriends();
+        saveDebounceId = null;
+    }, SAVE_DEBOUNCE_MS);
 }
 
 function getFriendName(peerId) {
@@ -334,9 +354,14 @@ async function getLocalAudio() {
 }
 
 function playRemoteStream(stream) {
-    const audio = new Audio();
-    audio.srcObject = stream;
-    audio.play().catch(() => { });
+    // Clean up previous remote audio if any
+    if (remoteAudio) {
+        remoteAudio.pause();
+        remoteAudio.srcObject = null;
+    }
+    remoteAudio = new Audio();
+    remoteAudio.srcObject = stream;
+    remoteAudio.play().catch(() => { });
 }
 
 async function initiateVoiceCall(friendId) {
@@ -385,7 +410,6 @@ function wireConnection(dataConn) {
     });
 
     conn.on('error', (err) => {
-        console.error('Connection error:', err);
         rlog.error('Connection error: ' + err.type);
         showToast('Connection error: ' + err.message, 'error');
     });
@@ -410,6 +434,11 @@ function cleanup() {
         localStream.getTracks().forEach(t => t.stop());
         localStream = null;
     }
+    if (remoteAudio) {
+        remoteAudio.pause();
+        remoteAudio.srcObject = null;
+        remoteAudio = null;
+    }
 }
 
 // ── Initialize PeerJS ───────────────────────────────────────────────────────────
@@ -430,7 +459,6 @@ async function init() {
     });
 
     peer.on('error', (err) => {
-        console.error('PeerJS error:', err);
         rlog.error('PeerJS error: ' + err.type);
         if (err.type === 'peer-unavailable') {
             statusText.textContent = 'Peer not found. Check the ID and try again.';
@@ -466,7 +494,20 @@ async function init() {
             highlightFriend(peerId, true);
             updateCallUI();
             rlog.info('Incoming connection from known friend, sidebar pulse active');
-        } else {
+        }
+
+        // Auto-dismiss after timeout
+        callTimeoutId = setTimeout(() => {
+            if (pendingConn) {
+                rlog.info('Incoming call timed out after ' + (CALL_TIMEOUT_MS / 1000) + 's');
+                clearCallState();
+                pendingConn.close();
+                pendingConn = null;
+                requestOverlay.style.display = 'none';
+                showToast('Missed call', 'error');
+            }
+        }, CALL_TIMEOUT_MS);
+        if (!isFriend(peerId)) {
             // Unknown → Full modal
             requestModalName.textContent = peerId.substring(0, 12) + '…';
             requestModalId.textContent = peerId;
@@ -576,7 +617,7 @@ sidebarToggle.addEventListener('click', () => {
     friendsSidebar.classList.add('collapsed');
     sidebarExpandBtn.classList.add('visible');
     friendsData.sidebarOpen = false;
-    saveFriends();
+    saveFriendsDebounced();
     updateCallUI();
     rlog.info('Sidebar closed');
 });
@@ -585,7 +626,7 @@ sidebarExpandBtn.addEventListener('click', () => {
     friendsSidebar.classList.remove('collapsed');
     sidebarExpandBtn.classList.remove('visible');
     friendsData.sidebarOpen = true;
-    saveFriends();
+    saveFriendsDebounced();
     updateCallUI();
     rlog.info('Sidebar opened');
 });
@@ -655,10 +696,15 @@ friendNameInput.addEventListener('keydown', (e) => {
 async function acceptPendingConnection() {
     if (!pendingConn) return;
 
+    // Save peer reference before nulling
+    const accepted = pendingConn;
+    const acceptedPeerId = accepted.peer;
+    pendingConn = null;
+
     clearCallState();
     requestOverlay.style.display = 'none';
 
-    wireConnection(pendingConn);
+    wireConnection(accepted);
 
     // Initialize audio stream and apply default-mute
     const stream = await getLocalAudio();
@@ -666,17 +712,15 @@ async function acceptPendingConnection() {
         applyDefaultMute();
     }
 
-    if (pendingConn.open) {
-        showChat(pendingConn.peer);
+    if (accepted.open) {
+        showChat(acceptedPeerId);
         rlog.info('Incoming connection accepted');
     } else {
-        pendingConn.on('open', () => {
-            showChat(pendingConn.peer);
+        accepted.on('open', () => {
+            showChat(acceptedPeerId);
             rlog.info('Incoming connection accepted');
         });
     }
-
-    pendingConn = null;
 }
 
 requestAcceptBtn.addEventListener('click', () => {

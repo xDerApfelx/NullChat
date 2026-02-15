@@ -1119,36 +1119,22 @@ body {
   font-weight: 600;
 }
 
-/* ── Police-Tape Mute Button (Flowing + Pulsing) ───────────────────────────── */
-@keyframes flowStripes {
-  0% {
-    background-position: 0 0;
-  }
-
-  100% {
-    background-position: 56px 0;
-  }
-}
-
+/* ── Strong Pulse Mute Button (No Stripes) ─────────────────────────────────── */
 @keyframes pulseGlow {
 
   0%,
   100% {
-    box-shadow: 0 0 8px rgba(237, 66, 69, 0.3);
+    box-shadow: 0 0 10px rgba(237, 66, 69, 0.4);
   }
 
   50% {
-    box-shadow: 0 0 22px rgba(237, 66, 69, 0.8);
+    box-shadow: 0 0 30px rgba(237, 66, 69, 1.0);
   }
 }
 
 .mute-btn.muted {
-  background: repeating-linear-gradient(-45deg,
-      #ed4245 0px, #ed4245 8px,
-      #8b1a1d 8px, #8b1a1d 16px) !important;
-  background-size: 56px 56px !important;
-  animation: flowStripes 1s linear infinite,
-    pulseGlow 1.5s ease-in-out infinite;
+  background: #ed4245 !important;
+  animation: pulseGlow 1.5s ease-in-out infinite;
   color: #fff !important;
   font-weight: 700;
   border: none;
