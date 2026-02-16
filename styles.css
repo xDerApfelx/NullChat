@@ -936,7 +936,7 @@ body {
 /* ── Sidebar collapse toggle (visible when collapsed) ───────────────────────── */
 .sidebar-expand-btn {
   position: fixed;
-  top: 12px;
+  top: 56px;
   left: 12px;
   width: 32px;
   height: 32px;
@@ -1337,6 +1337,38 @@ body {
 
 .participant-avatar:hover {
   transform: scale(1.15);
+}
+
+.participant-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.participant-add-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--bg-tertiary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  line-height: 1;
+  padding: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.participant-add-btn:hover {
+  transform: scale(1.2);
+  background: #2d8b4e;
 }
 
 /* ── Message Sender Label (Group Chat) ─────────────────────────────────────── */

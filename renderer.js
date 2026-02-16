@@ -723,11 +723,36 @@ function updateParticipantList() {
 
     connectedPeers.forEach(peerId => {
         const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+
+        const item = document.createElement('div');
+        item.className = 'participant-item';
+
         const avatar = document.createElement('div');
         avatar.className = 'participant-avatar';
         avatar.textContent = name[0].toUpperCase();
         avatar.title = name;
-        participantList.appendChild(avatar);
+
+        item.appendChild(avatar);
+
+        // Show (+) badge on non-friend participants
+        if (!isFriend(peerId)) {
+            const addBtn = document.createElement('button');
+            addBtn.className = 'participant-add-btn';
+            addBtn.textContent = '+';
+            addBtn.title = 'Add to contacts';
+            addBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Open the add-friend modal for this peer
+                currentPeerId = peerId;
+                friendModalId.textContent = peerId;
+                friendNameInput.value = '';
+                friendOverlay.style.display = 'flex';
+                friendNameInput.focus();
+            });
+            item.appendChild(addBtn);
+        }
+
+        participantList.appendChild(item);
     });
 }
 
