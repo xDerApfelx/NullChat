@@ -5,7 +5,9 @@
     "main": "main.js",
     "scripts": {
         "start": "electron .",
-        "debug": "electron . --debug-instance",
+        "debug1": "electron . --debug-instance=1",
+        "debug2": "electron . --debug-instance=2",
+        "debug3": "electron . --debug-instance=3",
         "make": "electron-builder --win --x64"
     },
     "dependencies": {

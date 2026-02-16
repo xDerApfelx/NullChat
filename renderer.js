@@ -13,6 +13,7 @@ const muteBtn = document.getElementById('mute-btn');
 const disconnectBtn = document.getElementById('disconnect-btn');
 const peerAvatar = document.getElementById('peer-avatar');
 const peerNameEl = document.getElementById('peer-name');
+const peerStatusEl = document.getElementById('peer-status');
 const toastEl = document.getElementById('toast');
 
 // Sidebar elements
@@ -39,24 +40,39 @@ const requestModalId = document.getElementById('request-modal-id');
 const requestAcceptBtn = document.getElementById('request-accept-btn');
 const requestDeclineBtn = document.getElementById('request-decline-btn');
 
+// Invite Modal elements
+const inviteBtn = document.getElementById('invite-btn');
+const inviteOverlay = document.getElementById('invite-overlay');
+const inviteList = document.getElementById('invite-list');
+const inviteCloseBtn = document.getElementById('invite-close-btn');
+
+// Participant bar
+const participantBar = document.getElementById('participant-bar');
+const participantList = document.getElementById('participant-list');
+
 // ── Configuration ───────────────────────────────────────────────────────────────
-const CALL_TIMEOUT_MS = 90000;  // Auto-dismiss incoming call UI after 30 seconds
-const SAVE_DEBOUNCE_MS = 5000;  // Debounce delay for sidebar state saves
+const CALL_TIMEOUT_MS = 90000;
+const SAVE_DEBOUNCE_MS = 5000;
 
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
-let conn = null;
+const connections = new Map();       // Map<PeerId, DataConnection>
+const activeCalls = new Map();       // Map<PeerId, MediaConnection>
+const remoteAudios = new Map();      // Map<PeerId, HTMLAudioElement>
+const connectedPeers = new Set();    // Quick lookup of connected peer IDs
+const expectedMeshPeers = new Set(); // Peers we expect from mesh-invite (auto-accept)
+const pendingVoiceCalls = new Map(); // Map<PeerId, MediaConnection> — voice calls awaiting data conn
+
 let localStream = null;
-let remoteAudio = null;     // Remote audio element (cleaned up on disconnect)
-let activeCall = null;
 let myId = '';
 let isMuted = false;
-let currentPeerId = null;
+let inSession = false;               // Are we currently in a chat session?
+let currentPeerId = null;            // First peer we connected to (for add-friend)
 let friendsData = { sidebarOpen: true, friends: [] };
-let pendingConn = null;     // Incoming connection waiting for accept/decline
-let ringingPeerId = null;   // Peer ID of the friend currently ringing
-let callTimeoutId = null;   // Timer for auto-dismissing unanswered calls
-let saveDebounceId = null;  // Timer for debounced friend saves
+let pendingConn = null;
+let ringingPeerId = null;
+let callTimeoutId = null;
+let saveDebounceId = null;
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -107,7 +123,6 @@ function highlightFriend(peerId, active) {
         if (item.dataset.friendId === peerId) {
             if (active) {
                 item.classList.add('ringing');
-                // Add phone emoji with shake if not already present
                 if (!item.querySelector('.friend-ring-icon')) {
                     const icon = document.createElement('span');
                     icon.className = 'friend-ring-icon';
@@ -150,10 +165,8 @@ function updateCallUI() {
     }
     const name = getFriendName(ringingPeerId) || ringingPeerId.substring(0, 12);
     if (friendsSidebar.classList.contains('collapsed')) {
-        // Sidebar closed → show call-hint bar next to expand button
         showCallHint(name);
     } else {
-        // Sidebar open → hide call-hint bar (sidebar item pulses instead)
         hideCallHint();
     }
 }
@@ -182,9 +195,17 @@ function timestamp() {
 }
 
 // ── DOM: add a chat message ─────────────────────────────────────────────────────
-function addMessage(text, sender) {
+function addMessage(text, sender, senderName) {
     const div = document.createElement('div');
-    div.className = 'message ' + sender; // 'self' or 'friend'
+    div.className = 'message ' + sender;
+
+    // Show sender label for friend messages in group chat
+    if (sender === 'friend' && senderName && connectedPeers.size > 1) {
+        const label = document.createElement('span');
+        label.className = 'message-sender';
+        label.textContent = senderName;
+        div.appendChild(label);
+    }
 
     const content = document.createTextNode(text);
     div.appendChild(content);
@@ -210,7 +231,6 @@ function addSystemMessage(text) {
 async function loadFriends() {
     friendsData = await window.electronAPI.getFriends();
     renderFriendsList();
-    // Restore sidebar state
     if (!friendsData.sidebarOpen) {
         friendsSidebar.classList.add('collapsed');
         sidebarExpandBtn.classList.add('visible');
@@ -224,7 +244,6 @@ async function saveFriends() {
     await window.electronAPI.saveFriends(friendsData);
 }
 
-// Debounced version — for frequent state changes like sidebar toggling
 function saveFriendsDebounced() {
     if (saveDebounceId) clearTimeout(saveDebounceId);
     saveDebounceId = setTimeout(() => {
@@ -243,7 +262,6 @@ function isFriend(peerId) {
 }
 
 function renderFriendsList() {
-    // Clear dynamic items (keep the empty message element)
     const items = friendsListEl.querySelectorAll('.friend-item');
     items.forEach(i => i.remove());
 
@@ -272,10 +290,8 @@ function renderFriendsList() {
         deleteBtn.textContent = '✕';
         deleteBtn.title = 'Remove contact';
 
-        // Click on item → connect or accept pending call
         item.addEventListener('click', (e) => {
             if (e.target === deleteBtn) return;
-            // If this friend is ringing, accept the pending connection
             if (pendingConn && pendingConn.peer === friend.id) {
                 acceptPendingConnection();
                 return;
@@ -284,7 +300,6 @@ function renderFriendsList() {
             connectBtn.click();
         });
 
-        // Delete friend
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             friendsData.friends = friendsData.friends.filter(f => f.id !== friend.id);
@@ -302,16 +317,17 @@ function renderFriendsList() {
 }
 
 // ── View switching ──────────────────────────────────────────────────────────────
-function showChat(friendId) {
-    currentPeerId = friendId;
-    const friendName = getFriendName(friendId);
-    const displayName = friendName || friendId.substring(0, 8) + '…';
+function showChat(peerId) {
+    currentPeerId = peerId;
+    inSession = true;
+
+    const friendName = getFriendName(peerId);
+    const displayName = friendName || peerId.substring(0, 8) + '…';
 
     peerAvatar.textContent = displayName[0].toUpperCase();
     peerNameEl.textContent = displayName;
 
-    // Show/hide the [+] button based on whether this peer is already a friend
-    if (isFriend(friendId)) {
+    if (isFriend(peerId)) {
         addFriendBtn.classList.add('hidden');
     } else {
         addFriendBtn.classList.remove('hidden');
@@ -320,13 +336,15 @@ function showChat(friendId) {
     loginView.style.display = 'none';
     chatView.style.display = 'flex';
 
-    const connectMsg = friendName ? `Connected to ${friendName}` : `Connected to ${friendId}`;
+    const connectMsg = friendName ? `Connected to ${friendName}` : `Connected to ${peerId}`;
     addSystemMessage(connectMsg);
     msgInput.focus();
+    updateParticipantList();
 }
 
 function showLogin() {
     currentPeerId = null;
+    inSession = false;
     chatView.style.display = 'none';
     loginView.style.display = 'flex';
     chatMessages.innerHTML = '';
@@ -337,6 +355,8 @@ function showLogin() {
     isMuted = false;
     muteBtn.textContent = '🎤 Mute';
     muteBtn.classList.remove('muted');
+    if (participantBar) participantBar.style.display = 'none';
+    if (participantList) participantList.innerHTML = '';
 }
 
 // ── Voice call helpers ──────────────────────────────────────────────────────────
@@ -353,100 +373,412 @@ async function getLocalAudio() {
     }
 }
 
-function playRemoteStream(stream) {
-    // Clean up previous remote audio if any
-    if (remoteAudio) {
-        remoteAudio.pause();
-        remoteAudio.srcObject = null;
+function playRemoteStream(peerId, stream) {
+    // Clean up existing audio for this peer if any
+    if (remoteAudios.has(peerId)) {
+        const old = remoteAudios.get(peerId);
+        old.pause();
+        old.srcObject = null;
     }
-    remoteAudio = new Audio();
-    remoteAudio.srcObject = stream;
-    remoteAudio.play().catch(() => { });
+    const audio = new Audio();
+    audio.srcObject = stream;
+    audio.play().catch(() => { });
+    remoteAudios.set(peerId, audio);
 }
 
-async function initiateVoiceCall(friendId) {
+async function initiateVoiceCall(peerId) {
     const stream = await getLocalAudio();
     if (!stream) return;
 
-    activeCall = peer.call(friendId, stream);
-    activeCall.on('stream', playRemoteStream);
-    activeCall.on('close', () => { activeCall = null; });
-    applyDefaultMute();
-    addSystemMessage('🎤 Voice call active (muted by default)');
-    rlog.info('Outgoing voice call started (muted by default)');
+    const call = peer.call(peerId, stream);
+    call.on('stream', (remoteStream) => playRemoteStream(peerId, remoteStream));
+    call.on('close', () => { activeCalls.delete(peerId); });
+    activeCalls.set(peerId, call);
+
+    // Only apply default mute if this is the first call in the session
+    if (activeCalls.size === 1) {
+        applyDefaultMute();
+        addSystemMessage('🎤 Voice call active (muted by default)');
+    }
+    rlog.info('Outgoing voice call started');
 }
 
 function answerCall(incomingCall) {
+    const peerId = incomingCall.peer;
     getLocalAudio().then((stream) => {
         if (!stream) {
-            incomingCall.answer(); // answer without stream
+            incomingCall.answer();
         } else {
             incomingCall.answer(stream);
         }
-        activeCall = incomingCall;
-        activeCall.on('stream', playRemoteStream);
-        activeCall.on('close', () => { activeCall = null; });
-        applyDefaultMute();
-        addSystemMessage('🎤 Voice call active (muted by default)');
-        rlog.info('Incoming voice call answered (muted by default)');
+        incomingCall.on('stream', (remoteStream) => playRemoteStream(peerId, remoteStream));
+        incomingCall.on('close', () => { activeCalls.delete(peerId); });
+        activeCalls.set(peerId, incomingCall);
+
+        if (activeCalls.size === 1) {
+            applyDefaultMute();
+            addSystemMessage('🎤 Voice call active (muted by default)');
+        }
+        rlog.info('Incoming voice call answered');
     });
+}
+
+// ── Parse and handle a single protocol message ─────────────────────────────────
+function handleProtocolMessage(peerId, raw) {
+    let msg;
+    try {
+        msg = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } catch {
+        msg = { type: 'chat', text: String(raw) };
+    }
+
+    switch (msg.type) {
+        case 'chat': {
+            const senderName = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+            addMessage(msg.text, 'friend', senderName);
+            rlog.info('Chat message received');
+            break;
+        }
+        case 'mesh-invite': {
+            const targetId = msg.peerId;
+            if (!connectedPeers.has(targetId) && targetId !== myId) {
+                rlog.info('Mesh invite received, connecting to peer');
+                connectToPeer(targetId, true);
+            }
+            break;
+        }
+        case 'mesh-peer-list': {
+            const peerIds = msg.peerIds || [];
+            peerIds.forEach(id => {
+                if (id !== myId && !connectedPeers.has(id)) {
+                    expectedMeshPeers.add(id);
+                }
+            });
+            rlog.info('Mesh peer list received: ' + peerIds.length + ' peer(s) to expect');
+            break;
+        }
+        case 'mesh-leave': {
+            removePeer(peerId, 'left the call');
+            break;
+        }
+        default:
+            rlog.warn('Unknown message type: ' + (msg.type || 'undefined'));
+    }
 }
 
 // ── Data connection wiring ──────────────────────────────────────────────────────
 function wireConnection(dataConn) {
-    conn = dataConn;
+    const peerId = dataConn.peer;
+    connections.set(peerId, dataConn);
+    connectedPeers.add(peerId);
 
-    conn.on('data', (data) => {
-        addMessage(data, 'friend');
-        rlog.info('User (friend) sent message');
+    // Remove early handler if one was attached (pending connections)
+    if (dataConn._earlyHandler) {
+        dataConn.off('data', dataConn._earlyHandler);
+        delete dataConn._earlyHandler;
+    }
+
+    // Attach the real data handler
+    dataConn.on('data', (raw) => handleProtocolMessage(peerId, raw));
+
+    dataConn.on('close', () => {
+        removePeer(peerId, 'disconnected');
     });
 
-    conn.on('close', () => {
-        addSystemMessage('Peer disconnected.');
-        rlog.info('Peer connection closed by remote');
-        cleanup();
-        showLogin();
-        showToast('Peer disconnected', 'error');
-    });
-
-    conn.on('error', (err) => {
-        rlog.error('Connection error: ' + err.type);
+    dataConn.on('error', (err) => {
+        rlog.error('Connection error with peer: ' + err.type);
         showToast('Connection error: ' + err.message, 'error');
+    });
+
+    // Replay any buffered messages that arrived before wiring
+    if (dataConn._bufferedMessages && dataConn._bufferedMessages.length > 0) {
+        rlog.info('Replaying ' + dataConn._bufferedMessages.length + ' buffered message(s)');
+        dataConn._bufferedMessages.forEach(raw => handleProtocolMessage(peerId, raw));
+    }
+    delete dataConn._bufferedMessages;
+
+    // Answer any pending voice calls from this peer
+    if (pendingVoiceCalls.has(peerId)) {
+        answerCall(pendingVoiceCalls.get(peerId));
+        pendingVoiceCalls.delete(peerId);
+    }
+
+    updateParticipantList();
+}
+
+// ── Remove a single peer from the mesh ──────────────────────────────────────────
+function removePeer(peerId, reason) {
+    // Guard against double-removal (mesh-leave + close can both fire)
+    if (!connectedPeers.has(peerId)) return;
+
+    const dataConn = connections.get(peerId);
+    if (dataConn) {
+        try { dataConn.close(); } catch { }
+        connections.delete(peerId);
+    }
+
+    const call = activeCalls.get(peerId);
+    if (call) {
+        try { call.close(); } catch { }
+        activeCalls.delete(peerId);
+    }
+
+    const audio = remoteAudios.get(peerId);
+    if (audio) {
+        audio.pause();
+        audio.srcObject = null;
+        remoteAudios.delete(peerId);
+    }
+
+    connectedPeers.delete(peerId);
+    expectedMeshPeers.delete(peerId);
+
+    const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+    addSystemMessage(`${name} ${reason}.`);
+    rlog.info('Peer removed: ' + reason);
+
+    updateParticipantList();
+
+    // If no peers left, return to login
+    if (connectedPeers.size === 0) {
+        cleanupLocal();
+        showLogin();
+        showToast('All peers disconnected', 'error');
+    }
+}
+
+// ── Connect to a peer (outgoing) ────────────────────────────────────────────────
+function connectToPeer(peerId, isMeshTriggered) {
+    if (connectedPeers.has(peerId) || peerId === myId) return;
+
+    const outgoing = peer.connect(peerId, { reliable: true });
+
+    outgoing.on('open', () => {
+        wireConnection(outgoing);
+
+        if (!inSession) {
+            showChat(peerId);
+        } else {
+            const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+            addSystemMessage(`${name} joined the call.`);
+            showToast(`${name} joined`, 'success');
+        }
+
+        rlog.info('Outgoing connection established' + (isMeshTriggered ? ' (mesh)' : ''));
+        initiateVoiceCall(peerId);
+    });
+
+    outgoing.on('error', (err) => {
+        rlog.error('Outgoing connection failed: ' + err.type);
+        if (!isMeshTriggered) {
+            statusText.textContent = 'Connection failed: ' + err.message;
+            statusText.className = 'status-text error';
+            connectBtn.disabled = false;
+        } else {
+            if (err.type === 'peer-unavailable') {
+                showToast('Peer is not online', 'error');
+            } else {
+                showToast('Could not connect to peer', 'error');
+            }
+        }
     });
 }
 
-// ── Send message ────────────────────────────────────────────────────────────────
+// ── Invite a peer to the mesh ───────────────────────────────────────────────────
+function invitePeerToMesh(peerId) {
+    if (connectedPeers.has(peerId) || peerId === myId) return;
+
+    const outgoing = peer.connect(peerId, { reliable: true });
+
+    outgoing.on('open', () => {
+        wireConnection(outgoing);
+
+        // 1. Tell the new peer about existing mesh members FIRST
+        //    (so they know to auto-accept connections from those peers)
+        const existingPeers = Array.from(connectedPeers).filter(id => id !== peerId);
+        if (existingPeers.length > 0) {
+            outgoing.send(JSON.stringify({ type: 'mesh-peer-list', peerIds: existingPeers }));
+        }
+
+        // 2. THEN tell existing peers to connect to the new peer
+        const inviteMsg = JSON.stringify({ type: 'mesh-invite', peerId: peerId });
+        connections.forEach((c, id) => {
+            if (id !== peerId && c.open) c.send(inviteMsg);
+        });
+
+        const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+        addSystemMessage(`${name} joined the call.`);
+        showToast(`${name} joined`, 'success');
+        rlog.info('Peer invited to mesh');
+
+        initiateVoiceCall(peerId);
+    });
+
+    outgoing.on('error', (err) => {
+        rlog.error('Mesh invite failed: ' + err.type);
+        if (err.type === 'peer-unavailable') {
+            showToast('Peer is not online', 'error');
+        } else {
+            showToast('Could not invite peer: ' + err.message, 'error');
+        }
+    });
+}
+
+// ── Handle a peer that was accepted into the mesh ───────────────────────────────
+function handleAcceptedPeer(peerId) {
+    if (!inSession) {
+        showChat(peerId);
+        rlog.info('Incoming connection accepted');
+    } else {
+        // Already in a call — integrate this peer into the existing mesh
+        const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+        addSystemMessage(`${name} joined the call.`);
+        showToast(`${name} joined`, 'success');
+
+        // Tell the new peer about existing mesh members
+        const conn = connections.get(peerId);
+        if (conn && conn.open) {
+            const existingPeers = Array.from(connectedPeers).filter(id => id !== peerId);
+            if (existingPeers.length > 0) {
+                conn.send(JSON.stringify({ type: 'mesh-peer-list', peerIds: existingPeers }));
+            }
+        }
+
+        // Tell existing peers to connect to the new peer
+        const inviteMsg = JSON.stringify({ type: 'mesh-invite', peerId: peerId });
+        connections.forEach((c, id) => {
+            if (id !== peerId && c.open) c.send(inviteMsg);
+        });
+
+        rlog.info('Incoming peer integrated into mesh');
+    }
+}
+
+// ── Send message (broadcast to all peers) ───────────────────────────────────────
 function sendMessage() {
     const text = msgInput.value.trim();
-    if (!text || !conn || !conn.open) return;
-    conn.send(text);
+    if (!text || connections.size === 0) return;
+
+    const msg = JSON.stringify({ type: 'chat', text: text });
+    connections.forEach(c => {
+        if (c.open) c.send(msg);
+    });
+
     addMessage(text, 'self');
-    rlog.info('User (me) sent message');
+    rlog.info('Message broadcast to ' + connections.size + ' peer(s)');
     msgInput.value = '';
     msgInput.focus();
 }
 
-// ── Cleanup ─────────────────────────────────────────────────────────────────────
+// ── Cleanup (leave mesh entirely) ───────────────────────────────────────────────
 function cleanup() {
-    if (activeCall) { activeCall.close(); activeCall = null; }
-    if (conn) { conn.close(); conn = null; }
+    // Announce departure to all peers
+    const leaveMsg = JSON.stringify({ type: 'mesh-leave' });
+    connections.forEach(c => {
+        try { if (c.open) c.send(leaveMsg); } catch { }
+    });
+
+    // Close all data connections
+    connections.forEach(c => { try { c.close(); } catch { } });
+    connections.clear();
+
+    // Close all voice calls
+    activeCalls.forEach(c => { try { c.close(); } catch { } });
+    activeCalls.clear();
+
+    // Clean up all remote audio
+    remoteAudios.forEach(a => { a.pause(); a.srcObject = null; });
+    remoteAudios.clear();
+
+    connectedPeers.clear();
+    expectedMeshPeers.clear();
+    pendingVoiceCalls.clear();
+
+    cleanupLocal();
+}
+
+function cleanupLocal() {
     if (localStream) {
         localStream.getTracks().forEach(t => t.stop());
         localStream = null;
     }
-    if (remoteAudio) {
-        remoteAudio.pause();
-        remoteAudio.srcObject = null;
-        remoteAudio = null;
+}
+
+// ── Participant list UI ─────────────────────────────────────────────────────────
+function updateParticipantList() {
+    if (!participantList || !participantBar) return;
+
+    participantList.innerHTML = '';
+    const count = connectedPeers.size;
+
+    if (count <= 1) {
+        participantBar.style.display = 'none';
+        if (peerStatusEl) peerStatusEl.textContent = '● Connected';
+        return;
     }
+
+    // Group call mode
+    participantBar.style.display = 'flex';
+    if (peerStatusEl) peerStatusEl.textContent = `● Group Call · ${count + 1}`;
+
+    connectedPeers.forEach(peerId => {
+        const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+        const avatar = document.createElement('div');
+        avatar.className = 'participant-avatar';
+        avatar.textContent = name[0].toUpperCase();
+        avatar.title = name;
+        participantList.appendChild(avatar);
+    });
+}
+
+// ── Invite list UI ──────────────────────────────────────────────────────────────
+function renderInviteList() {
+    if (!inviteList) return;
+    inviteList.innerHTML = '';
+
+    if (friendsData.friends.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'invite-empty';
+        empty.textContent = 'No contacts to invite';
+        inviteList.appendChild(empty);
+        return;
+    }
+
+    friendsData.friends.forEach(friend => {
+        const item = document.createElement('div');
+        const isConnected = connectedPeers.has(friend.id);
+        const isSelf = friend.id === myId;
+        item.className = 'invite-list-item' + (isConnected || isSelf ? ' disabled' : '');
+
+        const avatar = document.createElement('div');
+        avatar.className = 'invite-item-avatar';
+        avatar.textContent = friend.name[0].toUpperCase();
+
+        const name = document.createElement('span');
+        name.className = 'invite-item-name';
+        name.textContent = friend.name;
+
+        const status = document.createElement('span');
+        status.className = 'invite-item-status';
+        status.textContent = isConnected ? 'In call' : (isSelf ? 'You' : '');
+
+        item.appendChild(avatar);
+        item.appendChild(name);
+        item.appendChild(status);
+
+        if (!isConnected && !isSelf) {
+            item.addEventListener('click', () => {
+                invitePeerToMesh(friend.id);
+                inviteOverlay.classList.add('hidden');
+            });
+        }
+
+        inviteList.appendChild(item);
+    });
 }
 
 // ── Initialize PeerJS ───────────────────────────────────────────────────────────
-async function init() {
-    // Get persisted user ID from main process
-    myId = await window.electronAPI.getUserId();
-    myIdEl.textContent = myId;
-
+function setupPeer() {
     peer = new Peer(myId, {
         // Uses default public PeerJS cloud server (0.peerjs.com)
     });
@@ -455,17 +787,22 @@ async function init() {
         myIdEl.textContent = id;
         statusText.textContent = 'Ready to connect';
         statusText.className = 'status-text success';
+        connectBtn.disabled = false;
         rlog.info('PeerJS connected to signaling server');
     });
 
     peer.on('error', (err) => {
         rlog.error('PeerJS error: ' + err.type);
         if (err.type === 'peer-unavailable') {
-            statusText.textContent = 'Peer not found. Check the ID and try again.';
-            statusText.className = 'status-text error';
-            connectBtn.disabled = false;
+            if (!inSession) {
+                statusText.textContent = 'Peer not found. Check the ID and try again.';
+                statusText.className = 'status-text error';
+                connectBtn.disabled = false;
+            } else {
+                showToast('Peer is not online', 'error');
+            }
         } else if (err.type === 'unavailable-id') {
-            statusText.textContent = 'Your ID is busy. Restart the app.';
+            statusText.textContent = 'Your ID is busy. Click Reconnect below.';
             statusText.className = 'status-text error';
         } else {
             showToast('Error: ' + err.message, 'error');
@@ -474,23 +811,70 @@ async function init() {
 
     // ── Incoming data connections ──
     peer.on('connection', (incomingConn) => {
-        if (conn && conn.open) {
-            // Already connected to someone; reject silently
+        const peerId = incomingConn.peer;
+
+        // Already connected to this peer — reject duplicate
+        if (connectedPeers.has(peerId)) {
             incomingConn.close();
             return;
         }
 
-        // Store pending connection
+        // ── Attach EARLY data handler ──
+        // PeerJS data channels open bilaterally — the remote side may send
+        // mesh-peer-list before we've "accepted" and called wireConnection.
+        // We must process mesh-peer-list immediately so we know which peers
+        // to auto-accept, and buffer everything else for replay.
+        const bufferedMessages = [];
+        const earlyHandler = (raw) => {
+            let msg;
+            try { msg = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return; }
+
+            // Process mesh-peer-list RIGHT NOW so expectedMeshPeers is populated
+            if (msg.type === 'mesh-peer-list') {
+                (msg.peerIds || []).forEach(id => {
+                    if (id !== myId && !connectedPeers.has(id)) {
+                        expectedMeshPeers.add(id);
+                    }
+                });
+                rlog.info('Mesh peer list received (early): ' + (msg.peerIds || []).length + ' peer(s)');
+            }
+            // Buffer ALL messages (including mesh-peer-list) for proper replay
+            bufferedMessages.push(raw);
+        };
+        incomingConn.on('data', earlyHandler);
+        incomingConn._earlyHandler = earlyHandler;
+        incomingConn._bufferedMessages = bufferedMessages;
+
+        // Expected mesh peer — auto-accept without notification
+        if (expectedMeshPeers.has(peerId)) {
+            expectedMeshPeers.delete(peerId);
+            rlog.info('Auto-accepting expected mesh peer');
+
+            const doAutoAccept = () => {
+                wireConnection(incomingConn);
+                if (inSession) {
+                    const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+                    addSystemMessage(`${name} joined the call.`);
+                    showToast(`${name} joined`, 'success');
+                }
+            };
+
+            if (incomingConn.open) {
+                doAutoAccept();
+            } else {
+                incomingConn.on('open', doAutoAccept);
+            }
+            return;
+        }
+
+        // Normal incoming connection — show notification
         pendingConn = incomingConn;
-        const peerId = incomingConn.peer;
         const name = getFriendName(peerId);
 
-        // Start ringing
         startRinging();
         ringingPeerId = peerId;
 
         if (isFriend(peerId)) {
-            // Known friend → Sidebar pulse + call-hint, no modal
             highlightFriend(peerId, true);
             updateCallUI();
             rlog.info('Incoming connection from known friend, sidebar pulse active');
@@ -498,7 +882,7 @@ async function init() {
 
         // Auto-dismiss after timeout
         callTimeoutId = setTimeout(() => {
-            if (pendingConn) {
+            if (pendingConn && pendingConn.peer === peerId) {
                 rlog.info('Incoming call timed out after ' + (CALL_TIMEOUT_MS / 1000) + 's');
                 clearCallState();
                 pendingConn.close();
@@ -507,8 +891,8 @@ async function init() {
                 showToast('Missed call', 'error');
             }
         }, CALL_TIMEOUT_MS);
+
         if (!isFriend(peerId)) {
-            // Unknown → Full modal
             requestModalName.textContent = peerId.substring(0, 12) + '…';
             requestModalId.textContent = peerId;
             requestOverlay.style.display = 'flex';
@@ -518,16 +902,44 @@ async function init() {
 
     // ── Incoming voice calls ──
     peer.on('call', (incomingCall) => {
-        // Only answer if we are in an active chat
-        if (conn && conn.open) {
+        const peerId = incomingCall.peer;
+
+        // If we have a data connection to this peer, answer immediately
+        if (connectedPeers.has(peerId)) {
             answerCall(incomingCall);
         } else {
-            incomingCall.close();
+            // Store the call — it will be answered when the data connection is wired
+            pendingVoiceCalls.set(peerId, incomingCall);
         }
     });
 }
 
+async function init() {
+    myId = await window.electronAPI.getUserId();
+    myIdEl.textContent = myId;
+    setupPeer();
+}
+
+// ── Reconnect (destroy + recreate PeerJS without restarting) ────────────────────
+function reconnectPeer() {
+    rlog.info('Manual reconnect requested');
+    if (peer) {
+        try { peer.destroy(); } catch { }
+    }
+    cleanup();
+    showLogin();
+    statusText.textContent = 'Reconnecting…';
+    statusText.className = 'status-text';
+    setupPeer();
+}
+
 // ── Event listeners ─────────────────────────────────────────────────────────────
+
+// Reconnect
+const reconnectBtn = document.getElementById('reconnect-btn');
+reconnectBtn.addEventListener('click', () => {
+    reconnectPeer();
+});
 
 // Copy ID
 copyBtn.addEventListener('click', async () => {
@@ -563,22 +975,7 @@ connectBtn.addEventListener('click', () => {
     statusText.textContent = 'Connecting…';
     statusText.className = 'status-text';
 
-    const outgoing = peer.connect(friendId, { reliable: true });
-
-    outgoing.on('open', () => {
-        wireConnection(outgoing);
-        showChat(friendId);
-        rlog.info('Outgoing peer connection established');
-        // Also initiate voice call
-        initiateVoiceCall(friendId);
-    });
-
-    outgoing.on('error', (err) => {
-        rlog.error('Outgoing connection failed: ' + err.type);
-        statusText.textContent = 'Connection failed: ' + err.message;
-        statusText.className = 'status-text error';
-        connectBtn.disabled = false;
-    });
+    connectToPeer(friendId, false);
 });
 
 // Allow Enter key to connect
@@ -610,6 +1007,22 @@ disconnectBtn.addEventListener('click', () => {
     cleanup();
     showLogin();
     showToast('Disconnected', 'success');
+});
+
+// ── Invite button ───────────────────────────────────────────────────────────────
+inviteBtn.addEventListener('click', () => {
+    renderInviteList();
+    inviteOverlay.classList.remove('hidden');
+});
+
+inviteCloseBtn.addEventListener('click', () => {
+    inviteOverlay.classList.add('hidden');
+});
+
+inviteOverlay.addEventListener('click', (e) => {
+    if (e.target === inviteOverlay) {
+        inviteOverlay.classList.add('hidden');
+    }
 });
 
 // ── Sidebar toggle ──────────────────────────────────────────────────────────────
@@ -656,7 +1069,6 @@ friendSaveBtn.addEventListener('click', () => {
     }
     if (!currentPeerId) return;
 
-    // Add or update friend
     const existing = friendsData.friends.find(f => f.id === currentPeerId);
     if (existing) {
         existing.name = name;
@@ -667,12 +1079,10 @@ friendSaveBtn.addEventListener('click', () => {
     saveFriends();
     renderFriendsList();
 
-    // Update chat header with the new name
     peerNameEl.textContent = name;
     peerAvatar.textContent = name[0].toUpperCase();
     addFriendBtn.classList.add('hidden');
 
-    // Close modal
     friendOverlay.style.display = 'none';
     rlog.info('Friend added to contacts');
     showToast('Contact saved!', 'success');
@@ -696,7 +1106,6 @@ friendNameInput.addEventListener('keydown', (e) => {
 async function acceptPendingConnection() {
     if (!pendingConn) return;
 
-    // Save peer reference before nulling
     const accepted = pendingConn;
     const acceptedPeerId = accepted.peer;
     pendingConn = null;
@@ -704,21 +1113,19 @@ async function acceptPendingConnection() {
     clearCallState();
     requestOverlay.style.display = 'none';
 
-    wireConnection(accepted);
-
-    // Initialize audio stream and apply default-mute
-    const stream = await getLocalAudio();
-    if (stream) {
-        applyDefaultMute();
+    // Initialize audio stream if not already acquired
+    if (!localStream) {
+        const stream = await getLocalAudio();
+        if (stream) applyDefaultMute();
     }
 
     if (accepted.open) {
-        showChat(acceptedPeerId);
-        rlog.info('Incoming connection accepted');
+        wireConnection(accepted);
+        handleAcceptedPeer(acceptedPeerId);
     } else {
         accepted.on('open', () => {
-            showChat(acceptedPeerId);
-            rlog.info('Incoming connection accepted');
+            wireConnection(accepted);
+            handleAcceptedPeer(acceptedPeerId);
         });
     }
 }
@@ -757,13 +1164,11 @@ let updateDownloadUrl = '';
 function simpleMarkdown(text) {
     if (!text) return '';
 
-    // 1) Escape HTML entities first (security)
     let html = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // 2) Split into lines for block-level processing
     const lines = html.split('\n');
     const result = [];
     let inList = false;
@@ -771,7 +1176,6 @@ function simpleMarkdown(text) {
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
 
-        // Headers: ### → h4, ## → h3, # → h2
         if (line.match(/^#{3,}\s/)) {
             if (inList) { result.push('</ul>'); inList = false; }
             line = '<h4>' + line.replace(/^#{3,}\s*/, '') + '</h4>';
@@ -791,7 +1195,6 @@ function simpleMarkdown(text) {
             continue;
         }
 
-        // List items: - or * at start of line
         if (line.match(/^\s*[-*]\s+/)) {
             if (!inList) { result.push('<ul>'); inList = true; }
             line = '<li>' + line.replace(/^\s*[-*]\s+/, '') + '</li>';
@@ -799,15 +1202,12 @@ function simpleMarkdown(text) {
             continue;
         }
 
-        // Close list if we hit a non-list line
         if (inList) { result.push('</ul>'); inList = false; }
 
-        // Empty line → skip (spacing handled by CSS)
         if (line.trim() === '') {
             continue;
         }
 
-        // Regular paragraph
         result.push('<p>' + line + '</p>');
     }
 
@@ -815,7 +1215,6 @@ function simpleMarkdown(text) {
 
     html = result.join('\n');
 
-    // 3) Inline formatting (applied after block processing)
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
     html = html.replace(/`(.+?)`/g, '<code>$1</code>');
@@ -824,18 +1223,15 @@ function simpleMarkdown(text) {
 }
 
 window.electronAPI.onUpdateAvailable(async (data) => {
-    // Show banner
     const count = data.releases.length;
     const versionWord = count === 1 ? 'version' : 'versions';
     updateVersion.textContent = `${data.latestVersion} (${count} ${versionWord} behind)`;
     updateBanner.style.display = 'block';
     updateDownloadUrl = data.downloadUrl;
 
-    // Set current version
     const currentVer = await window.electronAPI.getAppVersion();
     currentVersionEl.textContent = 'v' + currentVer;
 
-    // Build release list for modal
     updateReleasesEl.innerHTML = '';
     data.releases.forEach(r => {
         const item = document.createElement('div');
@@ -865,17 +1261,14 @@ window.electronAPI.onUpdateAvailable(async (data) => {
     });
 });
 
-// Open modal when banner is clicked
 updateBanner.addEventListener('click', () => {
     updateOverlay.style.display = 'flex';
 });
 
-// Skip button
 updateSkipBtn.addEventListener('click', () => {
     updateOverlay.style.display = 'none';
 });
 
-// Download button
 updateDownloadBtn.addEventListener('click', () => {
     if (updateDownloadUrl) {
         window.electronAPI.openExternal(updateDownloadUrl);
@@ -883,7 +1276,6 @@ updateDownloadBtn.addEventListener('click', () => {
     updateOverlay.style.display = 'none';
 });
 
-// Close modal when clicking outside
 updateOverlay.addEventListener('click', (e) => {
     if (e.target === updateOverlay) {
         updateOverlay.style.display = 'none';

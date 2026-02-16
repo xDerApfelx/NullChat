@@ -5,10 +5,14 @@ const { v4: uuidv4 } = require('uuid');
 const log = require('./logger');
 
 // ── Debug Mode Setup ────────────────────────────────────────────────────────────
-const isDebugInstance = process.argv.includes('--debug-instance');
+const debugArg = process.argv.find(a => a.startsWith('--debug-instance'));
+const isDebugInstance = !!debugArg;
+let debugInstanceId = 1;
 if (isDebugInstance) {
-    const debugPath = path.join(app.getPath('userData'), 'debug-instance');
-    // Ensure debug dir exists
+    // Parse instance ID from --debug-instance=N (default: 1)
+    const match = debugArg.match(/=(\d+)/);
+    if (match) debugInstanceId = parseInt(match[1], 10);
+    const debugPath = path.join(app.getPath('userData'), `debug-instance-${debugInstanceId}`);
     if (!fs.existsSync(debugPath)) {
         fs.mkdirSync(debugPath, { recursive: true });
     }
@@ -136,7 +140,7 @@ function createWindow() {
     mainWindow.once('ready-to-show', () => {
         const version = app.getVersion();
         const rootTitle = `NullChat ${version}`;
-        mainWindow.setTitle(isDebugInstance ? `${rootTitle} [DEBUG]` : rootTitle);
+        mainWindow.setTitle(isDebugInstance ? `${rootTitle} [DEBUG #${debugInstanceId}]` : rootTitle);
 
         mainWindow.show();
         log.info('Main window visible');

@@ -60,6 +60,7 @@
         </div>
 
         <p class="status-text" id="status-text"></p>
+        <button class="reconnect-btn" id="reconnect-btn" title="Reset PeerJS connection">⟳ Reconnect</button>
       </div>
 
       <!-- ════════════════════════ CHAT VIEW ═════════════════════════ -->
@@ -69,14 +70,19 @@
             <div class="peer-avatar" id="peer-avatar">?</div>
             <div>
               <div class="peer-name" id="peer-name">Friend</div>
-              <div class="peer-status">● Connected</div>
+              <div class="peer-status" id="peer-status">● Connected</div>
             </div>
             <button class="add-friend-btn" id="add-friend-btn" title="Add to contacts">+</button>
           </div>
           <div class="controls">
+            <button class="invite-btn" id="invite-btn" title="Invite to call">👥 Invite</button>
             <button class="mute-btn" id="mute-btn">🎤 Mute</button>
             <button class="disconnect-btn" id="disconnect-btn">Disconnect</button>
           </div>
+        </div>
+
+        <div class="participant-bar" id="participant-bar" style="display:none;">
+          <div class="participant-list" id="participant-list"></div>
         </div>
 
         <div class="chat-messages" id="chat-messages"></div>
@@ -113,6 +119,17 @@
       <div class="request-modal-actions">
         <button class="request-decline-btn" id="request-decline-btn">Decline</button>
         <button class="request-accept-btn" id="request-accept-btn">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ INVITE TO CALL MODAL ═══════════════════════ -->
+  <div class="invite-overlay hidden" id="invite-overlay">
+    <div class="invite-modal">
+      <h3>👥 Invite to Call</h3>
+      <div class="invite-list" id="invite-list"></div>
+      <div class="invite-modal-actions">
+        <button class="invite-close-btn" id="invite-close-btn">Close</button>
       </div>
     </div>
   </div>
