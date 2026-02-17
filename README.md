@@ -21,6 +21,11 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 
 **[Download the latest version here](https://github.com/xDerApfelx/NullChat/releases)**
 
+NullChat comes in two flavors right now:
+
+*   🟢 **Stable (v1.3.6):** Recommended for reliable 1-on-1 calls and chat. Extremely stable.
+*   🔶 **Open Beta (v2.0-beta.1):** Use this if you want the new **Group Chat (Mesh)** feature! Please note that this is a major update and may still have some bugs.
+
 NullChat comes as a standard Windows installer (`.exe`).
 - **Standard Options:** The installer lets you choose the installation user (current user or all users).
 - **No Admin Rights Needed:** By default, it installs to your local user folder, so you don't even need administrator privileges.
