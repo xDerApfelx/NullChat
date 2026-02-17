@@ -13,6 +13,7 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 6. [Why NullChat?](#why-nullchat)
 7. [Security & Privacy](#security--privacy)
 8. [Troubleshooting & Support](#troubleshooting--support)
+9. [License](#license)
 
 ---
 
@@ -101,7 +102,7 @@ I created NullChat almost entirely with the help of AI. This means:
 ## Why NullChat?
 The name says it all. **Null** data permanently stored. **Null** tracking. **Null** account requirement.
 
-It’s intended for people who need a fast, private connection to a friend without a big corporation sitting in the middle.
+It’s intended for people who need a fast, private connection to friends without a big corporation sitting in the middle.
 
 ---
 
@@ -128,3 +129,20 @@ We are currently testing the new **Group Chat (Mesh)** feature! If you encounter
 **Report issues here:** [Open an issue on GitHub](https://github.com/xDerApfelx/NullChat/issues) and drag & drop the log file into the description.
 
 **Privacy Note:** The log file is designed to be **100% anonymous**. It does NOT contain your messages, your friends' IDs, or any personal data. It only tracks technical events (e.g., 'Connection failed', 'App crashed').
+
+---
+
+## 📜 License
+
+NullChat is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**.
+
+**In short, you are free to:**
+- **Share:** Copy and redistribute the material in any medium or format.
+- **Adapt:** Remix, transform, and build upon the material.
+
+**Under the following terms:**
+- **Attribution:** You must give appropriate credit.
+- **NonCommercial:** You may not use the material for commercial purposes.
+- **ShareAlike:** If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+
+See the [LICENSE](LICENSE) file for details.
