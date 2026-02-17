@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "1.3.6",
+    "version": "2.0.0-beta.1",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "main": "main.js",
     "scripts": {

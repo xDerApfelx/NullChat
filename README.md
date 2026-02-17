@@ -114,11 +114,17 @@ It’s intended for people who need a fast, private connection to a friend witho
 
 Encountering issues? We're here to help!
 
-### How to Report a Bug
-1.  **Check the logs:** NullChat creates an anonymous log file to help diagnose problems.
-    *   Open File Explorer and paste this into the address bar: `%APPDATA%\nullchat\logs`
-    *   You will see a file named `nullchat.log`.
-2.  Open an issue on GitHub: [Click here to report a bug](https://github.com/xDerApfelx/NullChat/issues)
-3.  **Attach the log file:** Drag and drop the `nullchat.log` file into your issue description.
+### 🐛 How to Report a Bug (Beta v2.0)
+We are currently testing the new **Group Chat (Mesh)** feature! If you encounter bugs, please help us fix them by providing:
+
+1.  **A detailed description** of what you did and what happened.
+2.  **Screen recording** (optional but extremely helpful!) showing how to reproduce the bug.
+3.  **Log files** from all involved peers (if possible).
+
+**Where to find logs:**
+*   Press `Win + R`, type `%APPDATA%\nullchat\logs`, and press Enter.
+*   You will see a file named `nullchat.log`.
+
+**Report issues here:** [Open an issue on GitHub](https://github.com/xDerApfelx/NullChat/issues) and drag & drop the log file into the description.
 
 **Privacy Note:** The log file is designed to be **100% anonymous**. It does NOT contain your messages, your friends' IDs, or any personal data. It only tracks technical events (e.g., 'Connection failed', 'App crashed').

@@ -12,6 +12,9 @@ Welcome to the future plans for **NullChat**!
 - [ ] **UI & Overlay Polish:** Improve the overall look and feel.
 - [ ] **General Troubleshooting:** Fixing bugs and improving stability.
 
+## 🚧 In Beta (Testing Phase)
+- **Group Chat (Mesh Networking)** (v2.0-beta.1) — *Currently in public testing!*
+
 ## 🚀 Upcoming Features
 *Concrete plans for the near future.*
 
@@ -23,7 +26,7 @@ Welcome to the future plans for **NullChat**!
 ## 💡 Concepts & Ideas
 *Big ideas we are exploring (experimental).*
 
-- [ ] **Group Chats & Calls:** Connect with 3+ people at once.
+
 - [ ] **Shorter Friend Codes:** Create user-friendly, short IDs.
 - [ ] **Mobile Version:** NullChat for Android (and maybe iOS).
 - [ ] **Cross-Platform Support:** Optimize for Linux and macOS.
