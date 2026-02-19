@@ -20,6 +20,7 @@ const toastEl = document.getElementById('toast');
 const friendsSidebar = document.getElementById('friends-sidebar');
 const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebarExpandBtn = document.getElementById('sidebar-expand-btn');
+const chatBurgerBtn = document.getElementById('chat-burger-btn');
 const friendsListEl = document.getElementById('friends-list');
 const friendsEmpty = document.getElementById('friends-empty');
 const addFriendBtn = document.getElementById('add-friend-btn');
@@ -340,6 +341,12 @@ function showChat(peerId) {
     addSystemMessage(connectMsg);
     msgInput.focus();
     updateParticipantList();
+
+    // Show inline burger in chat header if sidebar is collapsed
+    if (friendsSidebar.classList.contains('collapsed')) {
+        chatBurgerBtn.classList.remove('hidden');
+        sidebarExpandBtn.classList.remove('visible');
+    }
 }
 
 function showLogin() {
@@ -357,6 +364,12 @@ function showLogin() {
     muteBtn.classList.remove('muted');
     if (participantBar) participantBar.style.display = 'none';
     if (participantList) participantList.innerHTML = '';
+
+    // Hide chat burger, restore floating expand if sidebar is collapsed
+    chatBurgerBtn.classList.add('hidden');
+    if (friendsSidebar.classList.contains('collapsed')) {
+        sidebarExpandBtn.classList.add('visible');
+    }
 }
 
 // ── Voice call helpers ──────────────────────────────────────────────────────────
@@ -1053,7 +1066,12 @@ inviteOverlay.addEventListener('click', (e) => {
 // ── Sidebar toggle ──────────────────────────────────────────────────────────────
 sidebarToggle.addEventListener('click', () => {
     friendsSidebar.classList.add('collapsed');
-    sidebarExpandBtn.classList.add('visible');
+    if (inSession) {
+        setTimeout(() => chatBurgerBtn.classList.remove('hidden'), 300);
+        sidebarExpandBtn.classList.remove('visible');
+    } else {
+        setTimeout(() => sidebarExpandBtn.classList.add('visible'), 300);
+    }
     friendsData.sidebarOpen = false;
     saveFriendsDebounced();
     updateCallUI();
@@ -1063,10 +1081,21 @@ sidebarToggle.addEventListener('click', () => {
 sidebarExpandBtn.addEventListener('click', () => {
     friendsSidebar.classList.remove('collapsed');
     sidebarExpandBtn.classList.remove('visible');
+    chatBurgerBtn.classList.add('hidden');
     friendsData.sidebarOpen = true;
     saveFriendsDebounced();
     updateCallUI();
     rlog.info('Sidebar opened');
+});
+
+chatBurgerBtn.addEventListener('click', () => {
+    friendsSidebar.classList.remove('collapsed');
+    chatBurgerBtn.classList.add('hidden');
+    sidebarExpandBtn.classList.remove('visible');
+    friendsData.sidebarOpen = true;
+    saveFriendsDebounced();
+    updateCallUI();
+    rlog.info('Sidebar opened (from chat header)');
 });
 
 // Click on call-hint to accept the pending call
