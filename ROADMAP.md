@@ -27,6 +27,7 @@ Welcome to the future plans for **NullChat**!
 *Big ideas we are exploring (experimental).*
 
 
+- [ ] **Optional Chat Persistence:** Manually enable chat history for specific friends (encrypted & local).
 - [ ] **Shorter Friend Codes:** Create user-friendly, short IDs.
 - [ ] **Mobile Version:** NullChat for Android (and maybe iOS).
 - [ ] **Cross-Platform Support:** Optimize for Linux and macOS.
