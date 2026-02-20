@@ -1285,8 +1285,11 @@ function renderVersionHistory() {
     versionReleasesEl.innerHTML = '';
 
     // Separate betas and stable releases
-    const betas = cachedReleases.filter(r => r.prerelease);
     const stables = cachedReleases.filter(r => !r.prerelease);
+
+    // Only show betas that are newer than the latest stable version 
+    const latestStable = stables.length > 0 ? stables[0].version : '0.0.0';
+    const betas = cachedReleases.filter(r => r.prerelease && compareVersions(r.version, latestStable) > 0);
 
     // Beta section
     if (betas.length > 0) {
