@@ -12,9 +12,6 @@ Welcome to the future plans for **NullChat**!
 - [ ] **UI & Overlay Polish:** Improve the overall look and feel.
 - [ ] **General Troubleshooting:** Fixing bugs and improving stability.
 
-## 🚧 In Beta (Testing Phase)
-- **Group Chat (Mesh Networking)** (v2.0-beta.1) — *Currently in public testing!*
-
 ## 🚀 Upcoming Features
 *Concrete plans for the near future.*
 
@@ -26,7 +23,6 @@ Welcome to the future plans for **NullChat**!
 ## 💡 Concepts & Ideas
 *Big ideas we are exploring (experimental).*
 
-
 - [ ] **Optional Chat Persistence:** Manually enable chat history for specific friends (encrypted & local).
 - [ ] **Shorter Friend Codes:** Create user-friendly, short IDs.
 - [ ] **Mobile Version:** NullChat for Android (and maybe iOS).
@@ -34,6 +30,8 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v2.0.0:** **The Global Mesh & Update Center.** Stable Group Chat, Integrated Downloader, Settings Menu & Version History.
+- [x] **v2.0-beta.1:** Group Chat (Mesh Networking) Public Beta.
 - [x] **v1.3.6:** Smart Sidebar Call UI, Polished Mute Visuals & Audio Timings.
 - [x] **v1.3.5:** Smart Notifications, Ringtone, Mute Safety & Default-Mute.
 - [x] **v1.3.1:** Reconnection Bug Fix & Stability Improvements.
@@ -42,6 +40,6 @@ Welcome to the future plans for **NullChat**!
 - [x] **v1.2.0:** Friends Sidebar & Local Contact Management.
 - [x] **v1.1.2:** Markdown Changelogs & Release Insights.
 - [x] **v1.1.1:** Anonymous Logging System & Troubleshooting.
-- [x] **v1.1.0:** Auto-Update System via GitHub API.
+- [x] **v1.1.0:** Update Notifications via GitHub API.
 - [x] **v1.0.1:** Custom Application Icons.
 - [x] **v1.0.0:** Initial Release (Text & Voice P2P).

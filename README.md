@@ -23,11 +23,10 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 
 NullChat comes in two flavors right now:
 
-*   🟢 **Stable (v1.3.6):** Recommended for reliable 1-on-1 calls and chat. Extremely stable.
-*   🔶 **Open Beta (v2.0-beta.1):** Use this if you want the new **Group Chat (Mesh)** feature! Please note that this is a major update and may still have some bugs.
+*   🟢 **Stable (v2.0.0):** Recommended for everyone. Includes Group Chat (Mesh), Integrated Updates, and Settings.
 
 NullChat comes as a standard Windows installer (`.exe`).
-- **Standard Options:** The installer lets you choose the installation user (current user or all users).
+- **Optional Shortcuts:** The installer lets you choose whether to create desktop or start menu shortcuts during setup.
 - **No Admin Rights Needed:** By default, it installs to your local user folder, so you don't even need administrator privileges.
 
 ---
@@ -43,16 +42,16 @@ NullChat comes as a standard Windows installer (`.exe`).
 ---
 
 ## Features & Current Status
-*   📞 **Smart Notifications:** Intelligent call handling. Known friends trigger a subtle, shaking sidebar hint; unknown callers activate a full-screen request modal.
+*   👥 **Group Chat (Mesh):** Connect with multiple friends in a single call. No limits on group size (though bandwidth depends on your connection).
+*   📥 **Integrated Update Center:** Download and install updates directly within the app. No more manual GitHub downloads.
+*   ⚙️ **App Settings:** Toggle auto-updates and customize your experience.
+*   📋 **Version History:** View detailed changelogs for all releases directly in the app.
+*   📞 **Smart Notifications:** Intelligent call handling. Known friends trigger a subtle shaking sidebar hint; unknown callers activate a full-screen request modal.
 *   🛡️ **Privacy First:** Incoming connections require your approval. Nobody can force-join a call.
 *   🔇 **Mute Safety:** Calls start muted by default. A distinct pulsing visual warning ensures you never forget your microphone status.
 *   🎵 **Ringtone:** Soft audio notification for incoming calls.
 *   🫂 **Friends Sidebar:** Save your friends locally with custom nicknames for one-click connections.
-*   🔔 **Update Notifications:** Stay informed! The app checks for new versions and shows you the changelog.
-*   🛠️ **Debug Mode:** Developers can run multiple isolated instances using `npm run debug`.
-*   🖌️ **Custom Icons:** Professional look with dedicated icons.
-*   👥 **1-on-1 Chat:** Connect directly with one friend at a time.
-*   🌐 **True P2P:** Direct connection via WebRTC.
+*   🌐 **True P2P:** Direct connection via WebRTC. Your messages and voice never touch a chat server.
 *   🧹 **No Cloud Data:** Chat history exists only in memory. Friends list is stored locally on your device.
 *   🔑 **Persistent ID:** Your ID is saved locally so you can restart the app without losing it.
 *   📞 **Voice Chat:** A voice connection is automatically established once you accept.
@@ -71,16 +70,17 @@ NullChat uses **WebRTC technology**. Instead of your messages running through a 
 NullChat is an **Electron** application (Chromium + Node.js) that uses **PeerJS** for the networking layer.
 
 1.  **Signaling (Handshake):**
-    *   To find each other on the internet, both clients connect briefly to the public PeerJS Cloud signaling server.
-    *   They exchange **ICE Candidates** (IP addresses and ports) to figure out inevitable NAT traversal issues.
+    *   To find each other on the internet, clients connect briefly to the public PeerJS Cloud signaling server.
+    *   They exchange **ICE Candidates** (IP addresses and ports) to figure out NAT traversal.
     *   *Note:* No message content ever touches this signaling server. It only exchanges connection metadata.
 
-2.  **WebRTC Data Channel:**
-    *   Once the "handshake" is complete, a direct P2P data tunnel is established using `RTCPeerConnection`.
-    *   Text messages are sent via `RTCDataChannel`. They are end-to-end encrypted by default (WebRTC standard).
+2.  **Mesh Networking:**
+    *   In v2.0+, NullChat uses a **Full Mesh** topology.
+    *   When you "invite" someone to a call, the app helps coordinate direct 1-on-1 connections between every single participant in the group.
+    *   Voice data and messages are broadcast to every connected peer directly.
 
 3.  **Media Stream:**
-    *   Voice data uses `navigator.mediaDevices.getUserMedia()` and is streamed directly to the peer.
+    *   Voice data uses `navigator.mediaDevices.getUserMedia()` and is streamed directly using SRTP (Secure Real-time Transport Protocol).
 
 4.  **Security Model:**
     *   The app uses a strict **Context Isolation** model.
@@ -120,18 +120,18 @@ It’s intended for people who need a fast, private connection to friends withou
 
 Encountering issues? We're here to help!
 
-### 🐛 How to Report a Bug (Beta v2.0)
-We are currently testing the new **Group Chat (Mesh)** feature! If you encounter bugs, please help us fix them by providing:
-
-1.  **A detailed description** of what you did and what happened.
-2.  **Screen recording** (optional but extremely helpful!) showing how to reproduce the bug.
-3.  **Log files** from all involved peers (if possible).
-
-**Where to find logs:**
-*   Press `Win + R`, type `%APPDATA%\nullchat\logs`, and press Enter.
-*   You will see a file named `nullchat.log`.
-
-**Report issues here:** [Open an issue on GitHub](https://github.com/xDerApfelx/NullChat/issues) and drag & drop the log file into the description.
+### 🐛 How to Report a Bug
+    If you encounter bugs, please help us fix them by providing:
+    
+    1.  **A detailed description** of what you did and what happened.
+    2.  **Screen recording** (optional but extremely helpful!) showing how to reproduce the bug.
+    3.  **Log files** from all involved peers (if possible).
+    
+    **Where to find logs:**
+    *   Press `Win + R`, type `%APPDATA%\nullchat\logs`, and press Enter.
+    *   You will see a file named `nullchat.log`.
+    
+    **Report issues here:** [Open an issue on GitHub](https://github.com/xDerApfelx/NullChat/issues) and drag & drop the log file into the description.
 
 **Privacy Note:** The log file is designed to be **100% anonymous**. It does NOT contain your messages, your friends' IDs, or any personal data. It only tracks technical events (e.g., 'Connection failed', 'App crashed').
 
