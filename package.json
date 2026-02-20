@@ -11,12 +11,12 @@
         "make": "electron-builder --win --x64"
     },
     "dependencies": {
-        "peerjs": "^1.5.4",
-        "uuid": "^9.0.1"
+        "peerjs": "^1.5.5",
+        "uuid": "^13.0.0"
     },
     "devDependencies": {
-        "electron": "^28.1.0",
-        "electron-builder": "^24.9.1"
+        "electron": "^34.0.0",
+        "electron-builder": "^25.1.8"
     },
     "build": {
         "appId": "com.nullchat.app",
