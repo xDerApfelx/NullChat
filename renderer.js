@@ -749,11 +749,11 @@ function updateParticipantList() {
 
         item.appendChild(avatar);
 
-        // Show (+) badge on non-friend participants
+        // Show (+) badge on non-friend participants, otherwise show name
         if (!isFriend(peerId)) {
             const addBtn = document.createElement('button');
             addBtn.className = 'participant-add-btn';
-            addBtn.textContent = '+';
+            addBtn.textContent = '+ Add';
             addBtn.title = 'Add to contacts';
             addBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -765,6 +765,11 @@ function updateParticipantList() {
                 friendNameInput.focus();
             });
             item.appendChild(addBtn);
+        } else {
+            const nameEl = document.createElement('div');
+            nameEl.className = 'participant-name';
+            nameEl.textContent = name;
+            item.appendChild(nameEl);
         }
 
         participantList.appendChild(item);
@@ -1139,6 +1144,9 @@ friendSaveBtn.addEventListener('click', () => {
     peerAvatar.textContent = name[0].toUpperCase();
     addFriendBtn.classList.add('hidden');
 
+    // Also refresh the group chat participant bar to remove the '+' and show the name
+    updateParticipantList();
+
     friendOverlay.style.display = 'none';
     rlog.info('Friend added to contacts');
     showToast('Contact saved!', 'success');
@@ -1331,12 +1339,22 @@ function renderVersionHistory() {
         dateSpan.textContent = r.date;
         headerRight.appendChild(dateSpan);
 
+        const expandIcon = document.createElement('span');
+        expandIcon.className = 'version-expand-icon';
+        expandIcon.innerHTML = '▼'; // Simple down arrow
+        headerRight.appendChild(expandIcon);
+
         header.appendChild(versionSpan);
         header.appendChild(headerRight);
 
         const body = document.createElement('div');
         body.className = 'version-release-body';
         body.innerHTML = simpleMarkdown(r.body);
+
+        // Toggle expansion on click
+        header.addEventListener('click', () => {
+            item.classList.toggle('expanded');
+        });
 
         item.appendChild(header);
         item.appendChild(body);
