@@ -45,19 +45,26 @@ function loadOrCreateUserId() {
     return userId;
 }
 
-// ── Update checker ──────────────────────────────────────────────────────────────
+// ── Update system ───────────────────────────────────────────────────────────────
 const GITHUB_REPO = 'xDerApfelx/NullChat';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
+let latestExeAssetUrl = ''; // Cached download URL for the latest .exe
+let downloadedInstallerPath = ''; // Path to downloaded installer
 
 function compareVersions(a, b) {
-    const pa = a.replace(/^v/, '').split('.').map(Number);
-    const pb = b.replace(/^v/, '').split('.').map(Number);
+    const cleanA = a.replace(/^v/, '');
+    const cleanB = b.replace(/^v/, '');
+    const coreA = cleanA.replace(/-.*$/, '').split('.').map(Number);
+    const coreB = cleanB.replace(/-.*$/, '').split('.').map(Number);
     for (let i = 0; i < 3; i++) {
-        const na = pa[i] || 0;
-        const nb = pb[i] || 0;
-        if (na > nb) return 1;
-        if (na < nb) return -1;
+        if ((coreA[i] || 0) > (coreB[i] || 0)) return 1;
+        if ((coreA[i] || 0) < (coreB[i] || 0)) return -1;
     }
+    // Same core version: pre-release < stable (e.g. 2.0.0-beta.1 < 2.0.0)
+    const preA = cleanA.includes('-');
+    const preB = cleanB.includes('-');
+    if (preA && !preB) return -1;
+    if (!preA && preB) return 1;
     return 0;
 }
 
@@ -82,36 +89,127 @@ async function checkForUpdates() {
             return;
         }
 
-        const newerReleases = releases.filter(r => {
-            const tag = r.tag_name || '';
-            return compareVersions(tag, currentVersion) > 0;
-        });
-
-        if (newerReleases.length === 0) {
-            log.info('App is up to date');
-            return;
+        // Find the latest stable .exe asset URL
+        const latestStable = releases.find(r => !r.prerelease);
+        if (latestStable) {
+            const exeAsset = (latestStable.assets || []).find(a => a.name && a.name.endsWith('.exe'));
+            if (exeAsset) {
+                latestExeAssetUrl = exeAsset.browser_download_url;
+                log.info(`Found installer asset: ${exeAsset.name}`);
+            }
         }
 
-        log.info(`Update available: ${newerReleases[0].tag_name} (${newerReleases.length} newer release(s))`);
+        const hasUpdate = latestStable && compareVersions(latestStable.tag_name, currentVersion) > 0;
+        const settings = loadSettings();
 
-        const latest = newerReleases[0];
-        const updateData = {
-            latestVersion: latest.tag_name,
-            downloadUrl: latest.html_url,
-            releases: newerReleases.map(r => ({
-                version: r.tag_name,
-                name: r.name || r.tag_name,
-                body: r.body || 'No changelog provided.',
-                date: r.published_at ? new Date(r.published_at).toLocaleDateString() : '',
-                url: r.html_url
-            }))
-        };
+        // Send ALL releases to renderer for Version History
+        const allReleases = releases.map(r => ({
+            version: r.tag_name,
+            name: r.name || r.tag_name,
+            body: r.body || 'No changelog provided.',
+            date: r.published_at ? new Date(r.published_at).toLocaleDateString() : '',
+            url: r.html_url,
+            prerelease: !!r.prerelease
+        }));
 
-        mainWindow.webContents.send('update-available', updateData);
+        if (hasUpdate) {
+            log.info(`Update available: ${latestStable.tag_name}`);
+        } else {
+            log.info('App is up to date');
+        }
+
+        mainWindow.webContents.send('update-available', {
+            currentVersion: currentVersion,
+            latestVersion: latestStable ? latestStable.tag_name : currentVersion,
+            hasUpdate: !!hasUpdate,
+            hasExeAsset: !!latestExeAssetUrl,
+            autoUpdate: settings.autoUpdate,
+            releases: allReleases
+        });
     } catch (err) {
         log.error(`Update check failed: ${err.message}`);
     }
 }
+
+// ── Download update ─────────────────────────────────────────────────────────────
+let isDownloading = false;
+
+ipcMain.handle('download-update', async () => {
+    if (isDownloading) return { success: false, error: 'Download already in progress' };
+    if (!latestExeAssetUrl) {
+        log.warn('No installer asset URL available');
+        return { success: false, error: 'No installer found' };
+    }
+
+    isDownloading = true;
+    log.info('Starting update download...');
+    const { net } = require('electron');
+
+    try {
+        const response = await net.fetch(latestExeAssetUrl, {
+            headers: { 'User-Agent': 'NullChat-Updater' }
+        });
+
+        if (!response.ok) {
+            log.warn(`Download HTTP error: ${response.status}`);
+            isDownloading = false;
+            return { success: false, error: `HTTP ${response.status}` };
+        }
+
+        const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
+        const tempDir = app.getPath('temp');
+        const fileName = latestExeAssetUrl.split('/').pop() || 'NullChat-Setup.exe';
+        downloadedInstallerPath = path.join(tempDir, fileName);
+
+        const fileStream = fs.createWriteStream(downloadedInstallerPath);
+        let downloaded = 0;
+
+        // Handle disk errors (e.g. disk full, permission denied)
+        fileStream.on('error', (err) => {
+            log.error(`File write error: ${err.message}`);
+        });
+
+        const reader = response.body.getReader();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            fileStream.write(Buffer.from(value));
+            downloaded += value.byteLength;
+
+            if (contentLength > 0) {
+                const percent = Math.round((downloaded / contentLength) * 100);
+                if (mainWindow) {
+                    mainWindow.webContents.send('download-progress', { percent });
+                }
+            }
+        }
+
+        fileStream.end();
+        await new Promise(resolve => fileStream.on('finish', resolve));
+
+        log.info(`Update downloaded to: ${downloadedInstallerPath}`);
+        isDownloading = false;
+        return { success: true };
+    } catch (err) {
+        log.error(`Update download failed: ${err.message}`);
+        isDownloading = false;
+        return { success: false, error: err.message };
+    }
+});
+
+ipcMain.handle('install-update', () => {
+    if (!downloadedInstallerPath || !fs.existsSync(downloadedInstallerPath)) {
+        log.warn('No downloaded installer found');
+        return false;
+    }
+
+    log.info('Launching installer and quitting...');
+    const { spawn } = require('child_process');
+    spawn(downloadedInstallerPath, [], { detached: true, stdio: 'ignore' }).unref();
+    app.quit();
+    return true;
+});
 
 // ── Window creation ─────────────────────────────────────────────────────────────
 let mainWindow;
@@ -203,6 +301,38 @@ ipcMain.handle('save-friends', (_event, data) => {
         return true;
     } catch (err) {
         log.error('Failed to save friends: ' + err.message);
+        return false;
+    }
+});
+
+// ── Settings persistence ────────────────────────────────────────────────────────
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
+const DEFAULT_SETTINGS = { autoUpdate: true };
+
+function loadSettings() {
+    try {
+        if (fs.existsSync(SETTINGS_PATH)) {
+            return { ...DEFAULT_SETTINGS, ...JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf-8')) };
+        }
+    } catch (_) {
+        log.warn('Settings file corrupted, using defaults');
+    }
+    return { ...DEFAULT_SETTINGS };
+}
+
+ipcMain.handle('get-settings', () => {
+    return loadSettings();
+});
+
+ipcMain.handle('save-settings', (_event, data) => {
+    try {
+        const current = loadSettings();
+        const merged = { ...current, ...data };
+        fs.writeFileSync(SETTINGS_PATH, JSON.stringify(merged, null, 2), 'utf-8');
+        log.info('Settings saved');
+        return true;
+    } catch (err) {
+        log.error('Failed to save settings: ' + err.message);
         return false;
     }
 });

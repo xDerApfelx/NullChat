@@ -38,9 +38,16 @@
 
       <!-- ════════════════════════ LOGIN VIEW ════════════════════════ -->
       <div id="login-view">
-        <!-- Update banner -->
+        <!-- Top-right action buttons -->
+        <div class="login-actions">
+          <button class="login-action-btn" id="version-history-btn" title="Version History">📋</button>
+          <button class="login-action-btn" id="settings-btn" title="Settings">⚙️</button>
+        </div>
+
+        <!-- Update banner / progress bar -->
         <div class="update-banner" id="update-banner" style="display:none;">
-          🔔 New update available: <span id="update-version"></span>
+          <span class="update-banner-fill" id="update-banner-fill"></span>
+          <span class="update-banner-text" id="update-banner-text">🔔 Update available</span>
         </div>
 
         <h1>🔒 NullChat</h1>
@@ -135,15 +142,37 @@
     </div>
   </div>
 
-  <!-- Update Modal -->
-  <div class="update-overlay" id="update-overlay" style="display:none;">
-    <div class="update-modal">
-      <h2>🚀 Updates Available</h2>
-      <p class="update-modal-sub">You are running <span id="current-version"></span></p>
-      <div class="update-releases" id="update-releases"></div>
-      <div class="update-modal-actions">
-        <button class="update-skip-btn" id="update-skip-btn">Skip</button>
-        <button class="update-download-btn" id="update-download-btn">Download Latest</button>
+  <!-- Settings Modal -->
+  <div class="settings-overlay" id="settings-overlay" style="display:none;">
+    <div class="settings-modal">
+      <h2>⚙️ Settings</h2>
+      <div class="settings-list">
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Auto-Download Updates</span>
+            <span class="settings-item-desc">Automatically download new versions in the background</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-auto-update" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-modal-actions">
+        <button class="settings-close-btn" id="settings-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Version History Modal -->
+  <div class="version-overlay" id="version-overlay" style="display:none;">
+    <div class="version-modal">
+      <h2>📋 Version History</h2>
+      <p class="version-modal-sub">You are running <span id="current-version"></span></p>
+      <div class="version-beta-section" id="version-beta-section" style="display:none;"></div>
+      <div class="version-releases" id="version-releases"></div>
+      <div class="version-modal-actions">
+        <button class="version-close-btn" id="version-close-btn">Close</button>
       </div>
     </div>
   </div>

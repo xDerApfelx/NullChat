@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "2.0.0-beta.1",
+    "version": "2.0.0",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "main": "main.js",
     "scripts": {
@@ -28,9 +28,13 @@
         "nsis": {
             "oneClick": false,
             "allowToChangeInstallationDirectory": true,
-            "createDesktopShortcut": true,
-            "createStartMenuShortcut": true,
-            "perMachine": false
+            "allowElevation": true,
+            "runAfterFinish": true,
+            "include": "installer.nsh",
+            "createDesktopShortcut": false,
+            "createStartMenuShortcut": false,
+            "uninstallDisplayName": "NullChat Messenger",
+            "artifactName": "${productName}-Setup-${version}.${ext}"
         },
         "files": [
             "main.js",

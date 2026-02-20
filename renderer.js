@@ -336,6 +336,7 @@ function showChat(peerId) {
 
     loginView.style.display = 'none';
     chatView.style.display = 'flex';
+    document.querySelector('.login-actions').style.display = 'none';
 
     const connectMsg = friendName ? `Connected to ${friendName}` : `Connected to ${peerId}`;
     addSystemMessage(connectMsg);
@@ -354,6 +355,7 @@ function showLogin() {
     inSession = false;
     chatView.style.display = 'none';
     loginView.style.display = 'flex';
+    document.querySelector('.login-actions').style.display = 'flex';
     chatMessages.innerHTML = '';
     statusText.textContent = '';
     statusText.className = 'status-text';
@@ -1205,14 +1207,160 @@ loadFriends();
 
 // ── Update notification ─────────────────────────────────────────────────────────
 const updateBanner = document.getElementById('update-banner');
-const updateVersion = document.getElementById('update-version');
-const updateOverlay = document.getElementById('update-overlay');
-const updateReleasesEl = document.getElementById('update-releases');
-const updateSkipBtn = document.getElementById('update-skip-btn');
-const updateDownloadBtn = document.getElementById('update-download-btn');
+const updateBannerFill = document.getElementById('update-banner-fill');
+const updateBannerText = document.getElementById('update-banner-text');
+
+// Settings elements
+const settingsBtn = document.getElementById('settings-btn');
+const settingsOverlay = document.getElementById('settings-overlay');
+const settingsCloseBtn = document.getElementById('settings-close-btn');
+const settingAutoUpdate = document.getElementById('setting-auto-update');
+
+// Version History elements
+const versionHistoryBtn = document.getElementById('version-history-btn');
+const versionOverlay = document.getElementById('version-overlay');
+const versionCloseBtn = document.getElementById('version-close-btn');
+const versionReleasesEl = document.getElementById('version-releases');
+const versionBetaSection = document.getElementById('version-beta-section');
 const currentVersionEl = document.getElementById('current-version');
 
-let updateDownloadUrl = '';
+let updateState = 'idle'; // idle | available | downloading | ready | error
+let cachedReleases = null;
+let cachedCurrentVersion = '';
+let appSettings = { autoUpdate: true };
+
+// Load settings on startup
+(async () => {
+    try {
+        appSettings = await window.electronAPI.getSettings();
+        settingAutoUpdate.checked = appSettings.autoUpdate;
+    } catch (_) { }
+})();
+
+// ── Settings Modal ──────────────────────────────────────────────────────────────
+settingsBtn.addEventListener('click', () => {
+    settingsOverlay.style.display = 'flex';
+});
+
+settingsCloseBtn.addEventListener('click', () => {
+    settingsOverlay.style.display = 'none';
+});
+
+settingsOverlay.addEventListener('click', (e) => {
+    if (e.target === settingsOverlay) settingsOverlay.style.display = 'none';
+});
+
+settingAutoUpdate.addEventListener('change', async () => {
+    appSettings.autoUpdate = settingAutoUpdate.checked;
+    await window.electronAPI.saveSettings({ autoUpdate: appSettings.autoUpdate });
+    rlog.info(`Auto-update set to: ${appSettings.autoUpdate}`);
+});
+
+// ── Version History Modal ───────────────────────────────────────────────────────
+versionHistoryBtn.addEventListener('click', () => {
+    renderVersionHistory();
+    versionOverlay.style.display = 'flex';
+});
+
+versionCloseBtn.addEventListener('click', () => {
+    versionOverlay.style.display = 'none';
+});
+
+versionOverlay.addEventListener('click', (e) => {
+    if (e.target === versionOverlay) versionOverlay.style.display = 'none';
+});
+
+function renderVersionHistory() {
+    if (!cachedReleases || !cachedCurrentVersion) return;
+
+    currentVersionEl.textContent = 'v' + cachedCurrentVersion;
+    versionReleasesEl.innerHTML = '';
+
+    // Separate betas and stable releases
+    const betas = cachedReleases.filter(r => r.prerelease);
+    const stables = cachedReleases.filter(r => !r.prerelease);
+
+    // Beta section
+    if (betas.length > 0) {
+        versionBetaSection.style.display = 'block';
+        versionBetaSection.innerHTML = '<span class="beta-tag">⚡ Beta Versions</span><br>' +
+            betas.map(b => `${b.version} — ${b.name}`).join('<br>');
+    } else {
+        versionBetaSection.style.display = 'none';
+    }
+
+    // Stable releases
+    stables.forEach(r => {
+        const cleanVersion = r.version.replace(/^v/, '').replace(/-.*$/, '');
+        const cleanCurrent = cachedCurrentVersion.replace(/-.*$/, '');
+
+        const isCurrent = cleanVersion === cleanCurrent;
+        const isNewer = compareVersions(r.version, cachedCurrentVersion) > 0;
+
+        const item = document.createElement('div');
+        item.className = 'version-release-item';
+        if (isCurrent) item.classList.add('current');
+        else if (isNewer) item.classList.add('newer');
+
+        const header = document.createElement('div');
+        header.className = 'version-release-header';
+
+        const versionSpan = document.createElement('span');
+        versionSpan.className = 'version-release-version';
+        versionSpan.textContent = r.version;
+
+        const headerRight = document.createElement('div');
+        headerRight.style.display = 'flex';
+        headerRight.style.alignItems = 'center';
+        headerRight.style.gap = '8px';
+
+        if (isCurrent) {
+            const badge = document.createElement('span');
+            badge.className = 'version-release-badge badge-current';
+            badge.textContent = 'Current';
+            headerRight.appendChild(badge);
+        } else if (isNewer) {
+            const badge = document.createElement('span');
+            badge.className = 'version-release-badge badge-new';
+            badge.textContent = 'New';
+            headerRight.appendChild(badge);
+        }
+
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'version-release-date';
+        dateSpan.textContent = r.date;
+        headerRight.appendChild(dateSpan);
+
+        header.appendChild(versionSpan);
+        header.appendChild(headerRight);
+
+        const body = document.createElement('div');
+        body.className = 'version-release-body';
+        body.innerHTML = simpleMarkdown(r.body);
+
+        item.appendChild(header);
+        item.appendChild(body);
+        versionReleasesEl.appendChild(item);
+    });
+}
+
+// ── Simple version comparison for renderer ──────────────────────────────────────
+function compareVersions(a, b) {
+    const cleanA = a.replace(/^v/, '');
+    const cleanB = b.replace(/^v/, '');
+    const coreA = cleanA.replace(/-.*$/, '').split('.').map(Number);
+    const coreB = cleanB.replace(/-.*$/, '').split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+        if ((coreA[i] || 0) > (coreB[i] || 0)) return 1;
+        if ((coreA[i] || 0) < (coreB[i] || 0)) return -1;
+    }
+    // Same core version: pre-release < stable (e.g. 2.0.0-beta.1 < 2.0.0)
+    const preA = cleanA.includes('-');
+    const preB = cleanB.includes('-');
+    if (preA && !preB) return -1;
+    if (!preA && preB) return 1;
+    return 0;
+}
 
 // ── Simple Markdown → HTML parser (for changelogs) ──────────────────────────────
 function simpleMarkdown(text) {
@@ -1276,62 +1424,70 @@ function simpleMarkdown(text) {
     return html;
 }
 
-window.electronAPI.onUpdateAvailable(async (data) => {
-    const count = data.releases.length;
-    const versionWord = count === 1 ? 'version' : 'versions';
-    updateVersion.textContent = `${data.latestVersion} (${count} ${versionWord} behind)`;
-    updateBanner.style.display = 'block';
-    updateDownloadUrl = data.downloadUrl;
+// ── Update Banner Logic ─────────────────────────────────────────────────────────
+async function startDownload() {
+    if (updateState === 'downloading' || updateState === 'ready') return;
 
-    const currentVer = await window.electronAPI.getAppVersion();
-    currentVersionEl.textContent = 'v' + currentVer;
+    updateState = 'downloading';
+    updateBanner.className = 'update-banner downloading';
+    updateBannerText.textContent = '📥 Downloading update... 0%';
+    updateBannerFill.style.width = '0%';
 
-    updateReleasesEl.innerHTML = '';
-    data.releases.forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'update-release-item';
+    const result = await window.electronAPI.downloadUpdate();
 
-        const header = document.createElement('div');
-        header.className = 'update-release-header';
-
-        const version = document.createElement('span');
-        version.className = 'update-release-version';
-        version.textContent = r.version;
-
-        const date = document.createElement('span');
-        date.className = 'update-release-date';
-        date.textContent = r.date;
-
-        header.appendChild(version);
-        header.appendChild(date);
-
-        const body = document.createElement('div');
-        body.className = 'update-release-body';
-        body.innerHTML = simpleMarkdown(r.body);
-
-        item.appendChild(header);
-        item.appendChild(body);
-        updateReleasesEl.appendChild(item);
-    });
-});
-
-updateBanner.addEventListener('click', () => {
-    updateOverlay.style.display = 'flex';
-});
-
-updateSkipBtn.addEventListener('click', () => {
-    updateOverlay.style.display = 'none';
-});
-
-updateDownloadBtn.addEventListener('click', () => {
-    if (updateDownloadUrl) {
-        window.electronAPI.openExternal(updateDownloadUrl);
+    if (result.success) {
+        updateState = 'ready';
+        updateBanner.className = 'update-banner ready';
+        updateBannerText.textContent = '✨ Restart to Install';
+        updateBannerFill.style.width = '100%';
+        rlog.info('Update download complete, ready to install');
+    } else {
+        updateState = 'error';
+        updateBanner.className = 'update-banner';
+        updateBannerText.textContent = '❌ Download failed — click to retry';
+        updateBannerFill.style.width = '0%';
+        rlog.error('Update download failed: ' + result.error);
     }
-    updateOverlay.style.display = 'none';
+}
+
+window.electronAPI.onDownloadProgress((data) => {
+    if (updateState !== 'downloading') return;
+    const p = data.percent;
+    updateBannerFill.style.width = p + '%';
+    updateBannerText.textContent = `📥 Downloading update... ${p}%`;
 });
 
-updateOverlay.addEventListener('click', (e) => {
-    if (e.target === updateOverlay) {
-        updateOverlay.style.display = 'none';
+updateBanner.addEventListener('click', async () => {
+    if (updateState === 'available' || updateState === 'error') {
+        startDownload();
+    } else if (updateState === 'ready') {
+        await window.electronAPI.installUpdate();
+    }
+});
+
+window.electronAPI.onUpdateAvailable((data) => {
+    cachedReleases = data.releases;
+    cachedCurrentVersion = data.currentVersion;
+
+    if (data.hasUpdate) {
+        updateBanner.style.display = 'block';
+
+        if (data.autoUpdate && data.hasExeAsset) {
+            // Auto-download: immediately start
+            updateState = 'available';
+            startDownload();
+        } else if (data.hasExeAsset) {
+            // Manual: show blue banner
+            updateState = 'available';
+            updateBannerText.textContent = `🔔 Update ${data.latestVersion} available — click to download`;
+        } else {
+            // No .exe asset: fallback to external link
+            updateState = 'external-only';
+            updateBannerText.textContent = `🔔 Update ${data.latestVersion} available`;
+            updateBanner.addEventListener('click', () => {
+                const latest = data.releases.find(r => !r.prerelease);
+                if (latest) window.electronAPI.openExternal(latest.url);
+            }, { once: true });
+        }
     }
 });

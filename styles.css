@@ -55,6 +55,7 @@ body {
 
 /* ── Login View ──────────────────────────────────────────────────────────────── */
 #login-view {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -468,9 +469,41 @@ body {
   border-left: 3px solid var(--success);
 }
 
-/* ── Update Banner ───────────────────────────────────────────────────────────── */
+/* ── Login Action Buttons (top-right) ────────────────────────────────────────── */
+.login-actions {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 100;
+}
+
+.login-action-btn {
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition);
+}
+
+.login-action-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+}
+
+/* ── Update Banner / Progress Bar ────────────────────────────────────────────── */
 .update-banner {
   width: 100%;
+  position: relative;
+  overflow: hidden;
   background: var(--accent);
   color: #fff;
   padding: 10px 16px;
@@ -479,17 +512,59 @@ body {
   font-weight: 600;
   text-align: center;
   cursor: pointer;
-  transition: background var(--transition), transform 0.1s ease;
+  transition: transform 0.1s ease;
   animation: fadeIn 0.4s ease;
 }
 
+.update-banner-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--success);
+  transition: width 0.3s ease;
+  z-index: 0;
+}
+
+.update-banner-text {
+  position: relative;
+  z-index: 1;
+}
+
 .update-banner:hover {
-  background: var(--accent-hover);
   transform: scale(1.01);
 }
 
-/* ── Update Modal ────────────────────────────────────────────────────────────── */
-.update-overlay {
+.update-banner.downloading {
+  background: var(--bg-tertiary);
+  cursor: default;
+}
+
+.update-banner.ready {
+  background: transparent;
+  cursor: pointer;
+  animation: bannerPulse 1.5s ease-in-out infinite;
+}
+
+.update-banner.ready .update-banner-fill {
+  width: 100%;
+}
+
+@keyframes bannerPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ── Settings Modal ──────────────────────────────────────────────────────────── */
+.settings-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -503,132 +578,109 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-.update-modal {
+.settings-modal {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   padding: 28px 32px;
-  width: 480px;
+  width: 420px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
-.update-modal h2 {
+.settings-modal h2 {
   font-size: 20px;
   color: #fff;
-  margin-bottom: 4px;
+  margin-bottom: 20px;
 }
 
-.update-modal-sub {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-
-.update-releases {
-  flex: 1;
-  overflow-y: auto;
-  max-height: 350px;
+.settings-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-right: 4px;
+  gap: 14px;
 }
 
-.update-releases::-webkit-scrollbar {
-  width: 5px;
-}
-
-.update-releases::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 3px;
-}
-
-.update-release-item {
-  background: var(--bg-tertiary);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-}
-
-.update-release-header {
+.settings-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  padding: 12px 14px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
 }
 
-.update-release-version {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent);
+.settings-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.update-release-date {
+.settings-item-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-item-desc {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.update-release-body {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-secondary);
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
-.update-release-body h2,
-.update-release-body h3,
-.update-release-body h4 {
-  color: var(--text-primary);
-  margin: 10px 0 4px 0;
-  font-weight: 600;
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.update-release-body h2 {
-  font-size: 16px;
-}
-
-.update-release-body h3 {
-  font-size: 14px;
-}
-
-.update-release-body h4 {
-  font-size: 13px;
-}
-
-.update-release-body p {
-  margin: 4px 0;
-}
-
-.update-release-body ul {
-  margin: 4px 0;
-  padding-left: 20px;
-}
-
-.update-release-body li {
-  margin: 2px 0;
-}
-
-.update-release-body strong {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.update-release-body code {
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: var(--bg-input);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 12px;
+  border-radius: 24px;
+  transition: background var(--transition);
 }
 
-.update-modal-actions {
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition);
+}
+
+.toggle-switch input:checked+.toggle-slider {
+  background: var(--success);
+}
+
+.toggle-switch input:checked+.toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.settings-modal-actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
   justify-content: flex-end;
 }
 
-.update-skip-btn {
+.settings-close-btn {
   padding: 10px 20px;
   background: var(--bg-input);
   color: var(--text-primary);
@@ -640,28 +692,214 @@ body {
   transition: background var(--transition);
 }
 
-.update-skip-btn:hover {
+.settings-close-btn:hover {
   background: #4f545c;
 }
 
-.update-download-btn {
-  padding: 10px 24px;
-  background: var(--success);
+/* ── Version History Modal ───────────────────────────────────────────────────── */
+.version-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.version-modal {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.version-modal h2 {
+  font-size: 20px;
   color: #fff;
+  margin-bottom: 4px;
+}
+
+.version-modal-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.version-beta-section {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: rgba(250, 166, 26, 0.1);
+  border: 1px solid rgba(250, 166, 26, 0.3);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.version-beta-section .beta-tag {
+  color: #faa61a;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-releases {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.version-releases::-webkit-scrollbar {
+  width: 5px;
+}
+
+.version-releases::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+.version-release-item {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  border: 2px solid transparent;
+}
+
+.version-release-item.current {
+  border-color: var(--success);
+}
+
+.version-release-item.newer {
+  border-color: var(--accent);
+}
+
+.version-release-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.version-release-version {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.version-release-item.current .version-release-version {
+  color: var(--success);
+}
+
+.version-release-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+}
+
+.version-release-badge.badge-current {
+  background: rgba(67, 181, 129, 0.15);
+  color: var(--success);
+}
+
+.version-release-badge.badge-new {
+  background: rgba(114, 137, 218, 0.15);
+  color: var(--accent);
+}
+
+.version-release-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.version-release-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.version-release-body h2,
+.version-release-body h3,
+.version-release-body h4 {
+  color: var(--text-primary);
+  margin: 10px 0 4px 0;
+  font-weight: 600;
+}
+
+.version-release-body h2 {
+  font-size: 16px;
+}
+
+.version-release-body h3 {
+  font-size: 14px;
+}
+
+.version-release-body h4 {
+  font-size: 13px;
+}
+
+.version-release-body p {
+  margin: 4px 0;
+}
+
+.version-release-body ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.version-release-body li {
+  margin: 2px 0;
+}
+
+.version-release-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.version-release-body code {
+  background: var(--bg-input);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.version-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.version-close-btn {
+  padding: 10px 20px;
+  background: var(--bg-input);
+  color: var(--text-primary);
   border: none;
   border-radius: var(--radius);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), transform 0.1s ease;
+  transition: background var(--transition);
 }
 
-.update-download-btn:hover {
-  background: #2d8b4e;
-}
-
-.update-download-btn:active {
-  transform: scale(0.96);
+.version-close-btn:hover {
+  background: #4f545c;
 }
 
 /* ── Friends Sidebar ────────────────────────────────────────────────────────── */
@@ -938,12 +1176,12 @@ body {
   position: fixed;
   top: 12px;
   left: 12px;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   display: none;
   align-items: center;

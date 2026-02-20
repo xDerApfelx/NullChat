@@ -11,6 +11,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getFriends: () => ipcRenderer.invoke('get-friends'),
     saveFriends: (data) => ipcRenderer.invoke('save-friends', data),
 
+    // Settings
+    getSettings: () => ipcRenderer.invoke('get-settings'),
+    saveSettings: (data) => ipcRenderer.invoke('save-settings', data),
+
+    // Update download
+    downloadUpdate: () => ipcRenderer.invoke('download-update'),
+    installUpdate: () => ipcRenderer.invoke('install-update'),
+    onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_event, data) => callback(data)),
+
     // Anonymous logger relay — sends log entries to the main process
     log: (level, message) => ipcRenderer.send('log-from-renderer', level, message)
 });
