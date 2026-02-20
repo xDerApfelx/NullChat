@@ -30,9 +30,8 @@
             "allowToChangeInstallationDirectory": true,
             "allowElevation": true,
             "runAfterFinish": true,
-            "include": "installer.nsh",
-            "createDesktopShortcut": false,
-            "createStartMenuShortcut": false,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
             "uninstallDisplayName": "NullChat Messenger",
             "artifactName": "${productName}-Setup-${version}.${ext}"
         },
