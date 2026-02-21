@@ -51,6 +51,22 @@ const inviteCloseBtn = document.getElementById('invite-close-btn');
 const participantBar = document.getElementById('participant-bar');
 const participantList = document.getElementById('participant-list');
 
+// Settings elements
+const settingMicDevice = document.getElementById('setting-mic-device');
+const settingSpeakerDevice = document.getElementById('setting-speaker-device');
+const micTestBtn = document.getElementById('mic-test-btn');
+const micTestStopBtn = document.getElementById('mic-test-stop-btn');
+const micLevelFill = document.getElementById('mic-level-fill');
+const settingMicGain = document.getElementById('setting-mic-gain');
+const micGainValue = document.getElementById('mic-gain-value');
+const settingNoiseSuppression = document.getElementById('setting-noise-suppression');
+const settingVad = document.getElementById('setting-vad');
+const settingVadThreshold = document.getElementById('setting-vad-threshold');
+const vadThresholdValue = document.getElementById('vad-threshold-value');
+const vadSensitivityRow = document.getElementById('vad-sensitivity-row');
+const settingRingtoneVolume = document.getElementById('setting-ringtone-volume');
+const ringtoneVolumeValue = document.getElementById('ringtone-volume-value');
+
 // ── Configuration ───────────────────────────────────────────────────────────────
 const CALL_TIMEOUT_MS = 90000;
 const SAVE_DEBOUNCE_MS = 5000;
@@ -74,6 +90,19 @@ let pendingConn = null;
 let ringingPeerId = null;
 let callTimeoutId = null;
 let saveDebounceId = null;
+
+// Audio processing state
+let audioCtx = null;
+let micGainNode = null;
+let micAnalyser = null;
+let micTestStream = null;
+let micTestSource = null;
+let micTestGainNode = null;
+let micTestAnimId = null;
+let vadAnimId = null;
+const remoteAnalysers = new Map();   // Map<PeerId, AnalyserNode>
+let speakerHighlightInterval = null;
+let activePeerVolumePopup = null;    // Currently open peer volume popup
 
 // ── Anonymous logger shorthand ──────────────────────────────────────────────────
 const rlog = {
@@ -374,11 +403,44 @@ function showLogin() {
     }
 }
 
-// ── Voice call helpers ──────────────────────────────────────────────────────────
+// ── Voice call helpers ─────────────────────────────────────────────────────────
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    return audioCtx;
+}
+
 async function getLocalAudio() {
     if (localStream) return localStream;
     try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const constraints = {
+            audio: {
+                deviceId: appSettings.micDeviceId ? { exact: appSettings.micDeviceId } : undefined,
+                noiseSuppression: appSettings.noiseSuppression,
+                echoCancellation: appSettings.noiseSuppression,
+                autoGainControl: appSettings.noiseSuppression
+            }
+        };
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        // Set up gain node for mic volume control
+        const ctx = getAudioCtx();
+        const source = ctx.createMediaStreamSource(localStream);
+        micGainNode = ctx.createGain();
+        micGainNode.gain.value = appSettings.micGain;
+        micAnalyser = ctx.createAnalyser();
+        micAnalyser.fftSize = 256;
+
+        const dest = ctx.createMediaStreamDestination();
+        source.connect(micGainNode);
+        micGainNode.connect(micAnalyser);
+        micGainNode.connect(dest);
+
+        // Replace the tracks in localStream with the gained output
+        localStream = dest.stream;
+
+        // Start VAD monitoring if enabled
+        if (appSettings.vadEnabled) startVAD();
+
         return localStream;
     } catch (err) {
         console.warn('Microphone access denied:', err);
@@ -397,8 +459,33 @@ function playRemoteStream(peerId, stream) {
     }
     const audio = new Audio();
     audio.srcObject = stream;
+
+    // Apply saved per-peer volume
+    const friend = friendsData.friends.find(f => f.id === peerId);
+    if (friend && friend.volume !== undefined) {
+        audio.volume = friend.volume;
+    }
+
+    // Apply speaker device if selected
+    if (appSettings.speakerDeviceId && audio.setSinkId) {
+        audio.setSinkId(appSettings.speakerDeviceId).catch(() => { });
+    }
+
     audio.play().catch(() => { });
     remoteAudios.set(peerId, audio);
+
+    // Create analyser for speaker highlight
+    try {
+        const ctx = getAudioCtx();
+        const source = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        remoteAnalysers.set(peerId, analyser);
+        startSpeakerHighlight();
+    } catch (e) {
+        console.warn('Could not create analyser for peer:', e);
+    }
 }
 
 async function initiateVoiceCall(peerId) {
@@ -709,6 +796,10 @@ function cleanup() {
     expectedMeshPeers.clear();
     pendingVoiceCalls.clear();
 
+    // Stop audio monitoring
+    stopVAD();
+    stopSpeakerHighlight();
+
     cleanupLocal();
 }
 
@@ -741,11 +832,68 @@ function updateParticipantList() {
 
         const item = document.createElement('div');
         item.className = 'participant-item';
+        item.dataset.peerId = peerId;
 
         const avatar = document.createElement('div');
         avatar.className = 'participant-avatar';
         avatar.textContent = name[0].toUpperCase();
         avatar.title = name;
+
+        // Click on avatar to adjust per-peer volume
+        avatar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close any existing popup
+            if (activePeerVolumePopup) { activePeerVolumePopup.remove(); activePeerVolumePopup = null; }
+
+            const audio = remoteAudios.get(peerId);
+            if (!audio) return; // No audio stream for this peer yet
+
+            const popup = document.createElement('div');
+            popup.className = 'peer-volume-popup';
+
+            const label = document.createElement('span');
+            label.className = 'peer-volume-label';
+            label.textContent = '🔊 ' + name;
+
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.className = 'settings-range';
+            slider.min = '0';
+            slider.max = '100';
+            slider.value = Math.round(audio.volume * 100);
+
+            const valLabel = document.createElement('span');
+            valLabel.className = 'peer-volume-label';
+            valLabel.textContent = slider.value + '%';
+
+            slider.addEventListener('input', () => {
+                const vol = parseInt(slider.value) / 100;
+                audio.volume = vol;
+                valLabel.textContent = slider.value + '%';
+                // Save per-peer volume
+                const friend = friendsData.friends.find(f => f.id === peerId);
+                if (friend) {
+                    friend.volume = vol;
+                    saveFriends();
+                }
+            });
+
+            popup.appendChild(label);
+            popup.appendChild(slider);
+            popup.appendChild(valLabel);
+            item.appendChild(popup);
+            activePeerVolumePopup = popup;
+
+            // Close popup when clicking outside
+            const closePopup = (ev) => {
+                if (!popup.contains(ev.target) && ev.target !== avatar) {
+                    popup.remove();
+                    activePeerVolumePopup = null;
+                    document.removeEventListener('click', closePopup);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closePopup), 10);
+        });
 
         item.appendChild(avatar);
 
@@ -1235,33 +1383,338 @@ const currentVersionEl = document.getElementById('current-version');
 let updateState = 'idle'; // idle | available | downloading | ready | error
 let cachedReleases = null;
 let cachedCurrentVersion = '';
-let appSettings = { autoUpdate: true };
+let appSettings = {
+    autoUpdate: true, micDeviceId: '', speakerDeviceId: '',
+    micGain: 1.0, noiseSuppression: true, vadEnabled: true,
+    vadThreshold: 0.015, ringtoneVolume: 0.25
+};
 
 // Load settings on startup
 (async () => {
     try {
-        appSettings = await window.electronAPI.getSettings();
+        appSettings = { ...appSettings, ...(await window.electronAPI.getSettings()) };
         settingAutoUpdate.checked = appSettings.autoUpdate;
+        settingNoiseSuppression.checked = appSettings.noiseSuppression;
+        settingVad.checked = appSettings.vadEnabled;
+        settingVadThreshold.value = Math.round(appSettings.vadThreshold * 1000);
+        vadThresholdValue.textContent = settingVadThreshold.value;
+        vadSensitivityRow.style.display = appSettings.vadEnabled ? '' : 'none';
+        settingMicGain.value = Math.round(appSettings.micGain * 100);
+        micGainValue.textContent = settingMicGain.value + '%';
+        settingRingtoneVolume.value = Math.round(appSettings.ringtoneVolume * 100);
+        ringtoneVolumeValue.textContent = settingRingtoneVolume.value + '%';
+        ringtone.volume = appSettings.ringtoneVolume;
+        // Set initial VAD indicator position
+        const vadIndicator = document.getElementById('vad-indicator');
+        if (vadIndicator) vadIndicator.style.left = Math.min(appSettings.vadThreshold * 4000, 100) + '%';
+        await populateDeviceSelectors();
     } catch (_) { }
 })();
 
+// ── Device Enumeration ───────────────────────────────────────────────────────
+async function populateDeviceSelectors() {
+    try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        tempStream.getTracks().forEach(t => t.stop());
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        const speakers = devices.filter(d => d.kind === 'audiooutput');
+
+        settingMicDevice.innerHTML = '';
+        mics.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.deviceId;
+            opt.textContent = d.label || 'Microphone ' + (settingMicDevice.length + 1);
+            settingMicDevice.appendChild(opt);
+        });
+        if (appSettings.micDeviceId) settingMicDevice.value = appSettings.micDeviceId;
+
+        settingSpeakerDevice.innerHTML = '';
+        speakers.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.deviceId;
+            opt.textContent = d.label || 'Speaker ' + (settingSpeakerDevice.length + 1);
+            settingSpeakerDevice.appendChild(opt);
+        });
+        if (appSettings.speakerDeviceId) settingSpeakerDevice.value = appSettings.speakerDeviceId;
+    } catch (err) {
+        rlog.warn('Could not enumerate audio devices');
+    }
+}
+
+// ── Mic Test ────────────────────────────────────────────────────────────────
+async function startMicTest() {
+    try {
+        const constraints = {
+            audio: {
+                deviceId: settingMicDevice.value ? { exact: settingMicDevice.value } : undefined,
+                noiseSuppression: settingNoiseSuppression.checked,
+                echoCancellation: false,
+                autoGainControl: settingNoiseSuppression.checked
+            }
+        };
+        micTestStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const ctx = getAudioCtx();
+        micTestSource = ctx.createMediaStreamSource(micTestStream);
+
+        micTestGainNode = ctx.createGain();
+        micTestGainNode.gain.value = parseInt(settingMicGain.value) / 100;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+
+        micTestSource.connect(micTestGainNode);
+        micTestGainNode.connect(analyser);
+        micTestGainNode.connect(ctx.destination);
+
+        micTestBtn.classList.add('hidden');
+        micTestStopBtn.classList.remove('hidden');
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        function updateLevel() {
+            analyser.getByteTimeDomainData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const v = (dataArray[i] - 128) / 128;
+                sum += v * v;
+            }
+            const rms = Math.sqrt(sum / dataArray.length);
+            const pct = Math.min(rms * 400, 100);
+            micLevelFill.style.width = pct + '%';
+            micTestAnimId = requestAnimationFrame(updateLevel);
+        }
+        updateLevel();
+    } catch (err) {
+        showToast('Could not access microphone', 'error');
+    }
+}
+
+function stopMicTest() {
+    if (micTestAnimId) { cancelAnimationFrame(micTestAnimId); micTestAnimId = null; }
+    if (micTestSource) { micTestSource.disconnect(); micTestSource = null; }
+    if (micTestStream) { micTestStream.getTracks().forEach(t => t.stop()); micTestStream = null; }
+    micTestGainNode = null;
+    micLevelFill.style.width = '0%';
+    micTestBtn.classList.remove('hidden');
+    micTestStopBtn.classList.add('hidden');
+}
+
+// ── Voice Activity Detection ─────────────────────────────────────────────────
+function startVAD() {
+    if (!micAnalyser || !localStream) return;
+    const dataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+    function vadLoop() {
+        micAnalyser.getByteTimeDomainData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+            const v = (dataArray[i] - 128) / 128;
+            sum += v * v;
+        }
+        const rms = Math.sqrt(sum / dataArray.length);
+        if (!isMuted && localStream) {
+            localStream.getAudioTracks().forEach(t => { t.enabled = rms > appSettings.vadThreshold; });
+        }
+        vadAnimId = requestAnimationFrame(vadLoop);
+    }
+    vadLoop();
+}
+
+function stopVAD() {
+    if (vadAnimId) { cancelAnimationFrame(vadAnimId); vadAnimId = null; }
+}
+
+// ── Speaker Highlight (Group Calls) ──────────────────────────────────────────
+function startSpeakerHighlight() {
+    if (speakerHighlightInterval) return;
+    speakerHighlightInterval = setInterval(() => {
+        remoteAnalysers.forEach((analyser, peerId) => {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const v = (dataArray[i] - 128) / 128;
+                sum += v * v;
+            }
+            const rms = Math.sqrt(sum / dataArray.length);
+
+            // Check participant bar avatars (group calls)
+            const avatars = participantList.querySelectorAll('.participant-item');
+            avatars.forEach(item => {
+                if (item.dataset.peerId === peerId) {
+                    const avatar = item.querySelector('.participant-avatar');
+                    if (avatar) {
+                        if (rms > 0.01) avatar.classList.add('speaking');
+                        else avatar.classList.remove('speaking');
+                    }
+                }
+            });
+
+            // Check 1-on-1 chat header avatar
+            if (currentPeerId === peerId && peerAvatar) {
+                if (rms > 0.01) peerAvatar.classList.add('speaking');
+                else peerAvatar.classList.remove('speaking');
+            }
+        });
+    }, 100);
+}
+
+function stopSpeakerHighlight() {
+    if (speakerHighlightInterval) { clearInterval(speakerHighlightInterval); speakerHighlightInterval = null; }
+    remoteAnalysers.forEach((a) => { try { a.disconnect(); } catch (_) { } });
+    remoteAnalysers.clear();
+}
+
 // ── Settings Modal ──────────────────────────────────────────────────────────────
-settingsBtn.addEventListener('click', () => {
+settingsBtn.addEventListener('click', async () => {
+    await populateDeviceSelectors();
     settingsOverlay.style.display = 'flex';
 });
 
 settingsCloseBtn.addEventListener('click', () => {
+    stopMicTest();
     settingsOverlay.style.display = 'none';
 });
 
 settingsOverlay.addEventListener('click', (e) => {
-    if (e.target === settingsOverlay) settingsOverlay.style.display = 'none';
+    if (e.target === settingsOverlay) { stopMicTest(); settingsOverlay.style.display = 'none'; }
 });
 
 settingAutoUpdate.addEventListener('change', async () => {
     appSettings.autoUpdate = settingAutoUpdate.checked;
     await window.electronAPI.saveSettings({ autoUpdate: appSettings.autoUpdate });
     rlog.info(`Auto-update set to: ${appSettings.autoUpdate}`);
+});
+
+settingMicDevice.addEventListener('change', async () => {
+    appSettings.micDeviceId = settingMicDevice.value;
+    await window.electronAPI.saveSettings({ micDeviceId: appSettings.micDeviceId });
+    if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+        const newStream = await getLocalAudio();
+        if (newStream) {
+            const newTrack = newStream.getAudioTracks()[0];
+            activeCalls.forEach(call => {
+                const sender = call.peerConnection?.getSenders().find(s => s.track?.kind === 'audio');
+                if (sender) sender.replaceTrack(newTrack).catch(() => { });
+            });
+        }
+    }
+    rlog.info('Microphone device changed');
+});
+
+settingSpeakerDevice.addEventListener('change', async () => {
+    appSettings.speakerDeviceId = settingSpeakerDevice.value;
+    await window.electronAPI.saveSettings({ speakerDeviceId: appSettings.speakerDeviceId });
+    remoteAudios.forEach(audio => {
+        if (audio.setSinkId) audio.setSinkId(appSettings.speakerDeviceId).catch(() => { });
+    });
+    if (ringtone.setSinkId) ringtone.setSinkId(appSettings.speakerDeviceId).catch(() => { });
+    rlog.info('Speaker device changed');
+});
+
+settingMicGain.addEventListener('input', async () => {
+    const val = parseInt(settingMicGain.value);
+    micGainValue.textContent = val + '%';
+    appSettings.micGain = val / 100;
+    if (micGainNode) micGainNode.gain.value = appSettings.micGain;
+    if (micTestGainNode) micTestGainNode.gain.value = appSettings.micGain;
+    await window.electronAPI.saveSettings({ micGain: appSettings.micGain });
+});
+
+micTestBtn.addEventListener('click', () => startMicTest());
+micTestStopBtn.addEventListener('click', () => stopMicTest());
+
+settingNoiseSuppression.addEventListener('change', async () => {
+    appSettings.noiseSuppression = settingNoiseSuppression.checked;
+    await window.electronAPI.saveSettings({ noiseSuppression: appSettings.noiseSuppression });
+    rlog.info(`Noise suppression set to: ${appSettings.noiseSuppression}`);
+});
+
+settingVad.addEventListener('change', async () => {
+    appSettings.vadEnabled = settingVad.checked;
+    vadSensitivityRow.style.display = appSettings.vadEnabled ? '' : 'none';
+    await window.electronAPI.saveSettings({ vadEnabled: appSettings.vadEnabled });
+    if (appSettings.vadEnabled && localStream) startVAD();
+    else stopVAD();
+    rlog.info(`VAD set to: ${appSettings.vadEnabled}`);
+});
+
+settingVadThreshold.addEventListener('input', async () => {
+    vadThresholdValue.textContent = settingVadThreshold.value;
+    appSettings.vadThreshold = parseInt(settingVadThreshold.value) / 1000;
+    // Update the red VAD indicator line on the level bar
+    const vadIndicator = document.getElementById('vad-indicator');
+    if (vadIndicator) vadIndicator.style.left = Math.min(appSettings.vadThreshold * 4000, 100) + '%';
+    await window.electronAPI.saveSettings({ vadThreshold: appSettings.vadThreshold });
+});
+
+settingRingtoneVolume.addEventListener('input', async () => {
+    const val = parseInt(settingRingtoneVolume.value);
+    ringtoneVolumeValue.textContent = val + '%';
+    appSettings.ringtoneVolume = val / 100;
+    ringtone.volume = appSettings.ringtoneVolume;
+    await window.electronAPI.saveSettings({ ringtoneVolume: appSettings.ringtoneVolume });
+});
+
+// ── 1-on-1 Peer Volume (chat header avatar) ─────────────────────────────────
+peerAvatar.style.cursor = 'pointer';
+peerAvatar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activePeerVolumePopup) { activePeerVolumePopup.remove(); activePeerVolumePopup = null; }
+
+    const peerId = currentPeerId;
+    if (!peerId) return;
+    const audio = remoteAudios.get(peerId);
+    if (!audio) return;
+
+    const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
+
+    const popup = document.createElement('div');
+    popup.className = 'peer-volume-popup';
+
+    const label = document.createElement('span');
+    label.className = 'peer-volume-label';
+    label.textContent = '🔊 ' + name;
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'settings-range';
+    slider.min = '0';
+    slider.max = '100';
+    slider.value = Math.round(audio.volume * 100);
+
+    const valLabel = document.createElement('span');
+    valLabel.className = 'peer-volume-label';
+    valLabel.textContent = slider.value + '%';
+
+    slider.addEventListener('input', () => {
+        const vol = parseInt(slider.value) / 100;
+        audio.volume = vol;
+        valLabel.textContent = slider.value + '%';
+        const friend = friendsData.friends.find(f => f.id === peerId);
+        if (friend) { friend.volume = vol; saveFriends(); }
+    });
+
+    popup.appendChild(label);
+    popup.appendChild(slider);
+    popup.appendChild(valLabel);
+
+    // Position relative to the peer-info container
+    const peerInfo = peerAvatar.closest('.peer-info');
+    if (peerInfo) peerInfo.style.position = 'relative';
+    (peerInfo || peerAvatar.parentElement).appendChild(popup);
+    activePeerVolumePopup = popup;
+
+    const closePopup = (ev) => {
+        if (!popup.contains(ev.target) && ev.target !== peerAvatar) {
+            popup.remove();
+            activePeerVolumePopup = null;
+            document.removeEventListener('click', closePopup);
+        }
+    };
+    setTimeout(() => document.addEventListener('click', closePopup), 10);
 });
 
 // ── Version History Modal ───────────────────────────────────────────────────────

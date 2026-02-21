@@ -582,8 +582,9 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   padding: 28px 32px;
-  width: 420px;
-  max-height: 80vh;
+  width: 500px;
+  max-width: 90%;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
@@ -599,6 +600,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 6px;
+}
+
+.settings-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.settings-list::-webkit-scrollbar-thumb {
+  background: var(--bg-input);
+  border-radius: 3px;
 }
 
 .settings-item {
@@ -694,6 +707,223 @@ body {
 
 .settings-close-btn:hover {
   background: #4f545c;
+}
+
+/* ── Settings Section Labels ───────────────────────────────────────────────── */
+.settings-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+  margin-top: 10px;
+}
+
+.settings-section-label:first-child {
+  margin-top: 0;
+}
+
+/* ── Settings Select Dropdown ──────────────────────────────────────────────── */
+.settings-select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+  max-width: 200px;
+  transition: border-color var(--transition);
+}
+
+.settings-select:focus {
+  border-color: var(--accent);
+}
+
+.settings-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ── Settings Vertical Item ────────────────────────────────────────────────── */
+.settings-item-vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* ── Mic Test Controls ─────────────────────────────────────────────────────── */
+.mic-test-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.mic-test-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s ease;
+}
+
+.mic-test-btn:hover {
+  background: #4752c4;
+}
+
+.mic-test-btn:active {
+  transform: scale(0.96);
+}
+
+.mic-test-btn.mic-test-stop {
+  background: var(--danger);
+}
+
+.mic-test-btn.mic-test-stop:hover {
+  background: #c9363a;
+}
+
+.mic-test-btn.hidden {
+  display: none;
+}
+
+/* ── Mic Level Meter ───────────────────────────────────────────────────────── */
+.mic-level-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mic-level-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--success), #faa61a, var(--danger));
+  border-radius: 3px;
+  transition: width 0.08s ease;
+}
+
+.vad-indicator {
+  position: absolute;
+  top: 0;
+  left: 6%;
+  width: 2px;
+  height: 100%;
+  background: var(--danger);
+  border-radius: 1px;
+  z-index: 1;
+  transition: left 0.15s ease;
+}
+
+/* ── Settings Slider Row ───────────────────────────────────────────────────── */
+.settings-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.settings-slider-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.settings-slider-value {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Range Slider Styling ──────────────────────────────────────────────────── */
+.settings-range {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 5px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.settings-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ── Per-Peer Volume Popup ─────────────────────────────────────────────────── */
+.peer-volume-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.peer-volume-popup .settings-range {
+  width: 100px;
+}
+
+.peer-volume-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── Active Speaker Highlight ──────────────────────────────────────────────── */
+@keyframes speakingGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(67, 181, 129, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 14px rgba(67, 181, 129, 0.8);
+  }
+}
+
+.participant-avatar.speaking {
+  border-color: var(--success);
+  animation: speakingGlow 1.2s ease-in-out infinite;
+}
+
+.chat-header .peer-avatar.speaking {
+  box-shadow: 0 0 10px rgba(67, 181, 129, 0.6);
+  border: 2px solid var(--success);
+  animation: speakingGlow 1.2s ease-in-out infinite;
 }
 
 /* ── Version History Modal ───────────────────────────────────────────────────── */
@@ -1638,7 +1868,8 @@ body {
   font-weight: 700;
   color: #fff;
   border: 2px solid var(--bg-tertiary);
-  transition: transform 0.15s ease;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .participant-avatar:hover {

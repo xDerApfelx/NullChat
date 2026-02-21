@@ -147,6 +147,9 @@
     <div class="settings-modal">
       <h2>⚙️ Settings</h2>
       <div class="settings-list">
+
+        <!-- ── General ── -->
+        <div class="settings-section-label">General</div>
         <div class="settings-item">
           <div class="settings-item-info">
             <span class="settings-item-label">Auto-Download Updates</span>
@@ -157,6 +160,82 @@
             <span class="toggle-slider"></span>
           </label>
         </div>
+
+        <!-- ── Audio Devices ── -->
+        <div class="settings-section-label">Audio Devices</div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Microphone</span>
+            <span class="settings-item-desc">Select default input device</span>
+          </div>
+          <select id="setting-mic-device" class="settings-select"></select>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Speaker</span>
+            <span class="settings-item-desc">Select default output device</span>
+          </div>
+          <select id="setting-speaker-device" class="settings-select"></select>
+        </div>
+
+        <!-- ── Microphone Test ── -->
+        <div class="settings-section-label">Microphone Test</div>
+        <div class="settings-item settings-item-vertical">
+          <div class="mic-test-controls">
+            <button class="mic-test-btn" id="mic-test-btn">🎤 Test Microphone</button>
+            <button class="mic-test-btn mic-test-stop hidden" id="mic-test-stop-btn">⏹ Stop</button>
+          </div>
+          <div class="mic-level-bar" id="mic-level-bar">
+            <div class="mic-level-fill" id="mic-level-fill"></div>
+            <div class="vad-indicator" id="vad-indicator"></div>
+          </div>
+          <div class="settings-slider-row">
+            <span class="settings-slider-label">Mic Gain</span>
+            <input type="range" id="setting-mic-gain" class="settings-range" min="0" max="200" value="100" />
+            <span class="settings-slider-value" id="mic-gain-value">100%</span>
+          </div>
+        </div>
+
+        <!-- ── Voice Processing ── -->
+        <div class="settings-section-label">Voice Processing</div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Noise Suppression</span>
+            <span class="settings-item-desc">Reduce background noise and echo</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-noise-suppression" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Voice Activity Detection</span>
+            <span class="settings-item-desc">Only transmit when you speak</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-vad" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item" id="vad-sensitivity-row">
+          <div class="settings-slider-row">
+            <span class="settings-slider-label">VAD Sensitivity</span>
+            <input type="range" id="setting-vad-threshold" class="settings-range" min="1" max="50" value="15" />
+            <span class="settings-slider-value" id="vad-threshold-value">15</span>
+          </div>
+        </div>
+
+        <!-- ── Ringtone ── -->
+        <div class="settings-section-label">Ringtone</div>
+        <div class="settings-item">
+          <div class="settings-slider-row">
+            <span class="settings-slider-label">Ringtone Volume</span>
+            <input type="range" id="setting-ringtone-volume" class="settings-range" min="0" max="100" value="25" />
+            <span class="settings-slider-value" id="ringtone-volume-value">25%</span>
+          </div>
+        </div>
+
       </div>
       <div class="settings-modal-actions">
         <button class="settings-close-btn" id="settings-close-btn">Close</button>

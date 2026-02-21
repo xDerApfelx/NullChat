@@ -307,7 +307,16 @@ ipcMain.handle('save-friends', (_event, data) => {
 
 // ── Settings persistence ────────────────────────────────────────────────────────
 const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
-const DEFAULT_SETTINGS = { autoUpdate: true };
+const DEFAULT_SETTINGS = {
+    autoUpdate: true,
+    micDeviceId: '',
+    speakerDeviceId: '',
+    micGain: 1.0,
+    noiseSuppression: true,
+    vadEnabled: true,
+    vadThreshold: 0.015,
+    ringtoneVolume: 0.25
+};
 
 function loadSettings() {
     try {
