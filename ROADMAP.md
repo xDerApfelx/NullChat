@@ -15,10 +15,7 @@ Welcome to the future plans for **NullChat**!
 ## 🚀 Upcoming Features
 *Concrete plans for the near future.*
 
-- [ ] **Advanced Audio Settings:**
-    - [ ] Volume Sliders for voice chat.
-    - [ ] Microphone & Speaker selection.
-    - [ ] Audio Effects (Noise Suppression, Echo Cancellation).
+- [ ] **Advanced Audio Settings:** ✅ Shipped in v2.1.0
 
 ## 💡 Concepts & Ideas
 *Big ideas we are exploring (experimental).*
@@ -30,6 +27,7 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v2.1.0:** **The Audio Update.** Full audio control: device selection, mic test, noise suppression, VAD, speaker highlight & per-person volume.
 - [x] **v2.0.0:** **The Global Mesh & Update Center.** Stable Group Chat, Integrated Downloader, Settings Menu & Version History.
 - [x] **v2.0-beta.1:** Group Chat (Mesh Networking) Public Beta.
 - [x] **v1.3.6:** Smart Sidebar Call UI, Polished Mute Visuals & Audio Timings.

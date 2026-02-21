@@ -23,7 +23,7 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 
 NullChat comes in two flavors right now:
 
-*   🟢 **Stable (v2.0.0):** Recommended for everyone. Includes Group Chat (Mesh), Integrated Updates, and Settings.
+*   🟢 **Stable (v2.1.0):** Recommended for everyone. Includes Group Chat (Mesh), Full Audio Controls, Integrated Updates, and Settings.
 
 NullChat comes as a standard Windows installer (`.exe`).
 - **Optional Shortcuts:** The installer lets you choose whether to create desktop or start menu shortcuts during setup.
@@ -48,6 +48,7 @@ NullChat comes as a standard Windows installer (`.exe`).
 *   🫂 **Friends Sidebar:** Save your friends locally and assign custom nicknames for quick, one-click connections.
 *   📞 **Smart Notifications:** Known friends trigger a subtle notification, while unknown callers activate a clear request screen.
 *   📥 **Integrated Updates:** Get notified and install new versions directly within the app.
+*   🎚️ **Full Audio Control:** Choose your microphone and speaker, test your mic with a live level meter, set individual call volumes per person, and fine-tune noise suppression and voice activity detection — all from the Settings menu.
 *   🌙 **Modern Dark Mode:** A sleek, minimalistic, and user-friendly interface.
 
 ---
