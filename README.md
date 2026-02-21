@@ -88,7 +88,7 @@ NullChat is an **Electron** application (Chromium + Node.js) that uses **PeerJS*
 
 This is a small passion project. Since companies like Discord are collecting more and more data (and recently even started requiring ID verification), a friend and I simply lost interest in those platforms. We wanted something that just works, without us having to reveal our identity or have our data sold to advertising networks.
 
-**Honesty is important:** I have very little experience with programming and, to be honest, I'm not particularly good at it either. I had this idea and simply asked an AI (Gemini) "just for fun" if it even made sense technically. The entire program emerged from that conversation.
+**Honesty is important:** I have a background in networking, so I knew the logic of how a private system should work, but I’m definitely not a pro programmer. I’ll be honest: I used a lot of AI to help me write the code. I know some people hate that, but it allowed me to turn this idea into a reality much faster and better than I ever expected.
 
 I created NullChat almost entirely with the help of AI. This means:
 - **Expect bugs:** Since I'm not a pro, there might be glitches.
