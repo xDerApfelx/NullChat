@@ -41,21 +41,14 @@ NullChat comes as a standard Windows installer (`.exe`).
 
 ---
 
-## Features & Current Status
-*   👥 **Group Chat (Mesh):** Connect with multiple friends in a single call. No limits on group size (though bandwidth depends on your connection).
-*   📥 **Integrated Update Center:** Download and install updates directly within the app. No more manual GitHub downloads.
-*   ⚙️ **App Settings:** Toggle auto-updates and customize your experience.
-*   📋 **Version History:** View detailed changelogs for all releases directly in the app.
-*   📞 **Smart Notifications:** Intelligent call handling. Known friends trigger a subtle shaking sidebar hint; unknown callers activate a full-screen request modal.
-*   🛡️ **Privacy First:** Incoming connections require your approval. Nobody can force-join a call.
-*   🔇 **Mute Safety:** Calls start muted by default. A distinct pulsing visual warning ensures you never forget your microphone status.
-*   🎵 **Ringtone:** Soft audio notification for incoming calls.
-*   🫂 **Friends Sidebar:** Save your friends locally with custom nicknames for one-click connections.
-*   🌐 **True P2P:** Direct connection via WebRTC. Your messages and voice never touch a chat server.
-*   🧹 **No Cloud Data:** Chat history exists only in memory. Friends list is stored locally on your device.
-*   🔑 **Persistent ID:** Your ID is saved locally so you can restart the app without losing it.
-*   📞 **Voice Chat:** A voice connection is automatically established once you accept.
-*   🌙 **Dark Mode:** A simple, modern design.
+## Core Features
+*   🌐 **100% Serverless & Private:** Direct P2P connection via WebRTC. Your messages and voice calls never touch a central server, and no cloud data is ever stored.
+*   👥 **Group Voice & Text Chat:** Seamlessly connect with multiple friends in a single secure mesh call.
+*   🛡️ **Privacy First:** You have full control. Incoming connections always require your approval, ensuring nobody can force-join your calls.
+*   🫂 **Friends Sidebar:** Save your friends locally and assign custom nicknames for quick, one-click connections.
+*   📞 **Smart Notifications:** Known friends trigger a subtle notification, while unknown callers activate a clear request screen.
+*   📥 **Integrated Updates:** Get notified and install new versions directly within the app.
+*   🌙 **Modern Dark Mode:** A sleek, minimalistic, and user-friendly interface.
 
 ---
 
