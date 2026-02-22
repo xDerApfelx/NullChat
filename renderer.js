@@ -1771,7 +1771,9 @@ function renderVersionHistory() {
 
         const versionSpan = document.createElement('span');
         versionSpan.className = 'version-release-version';
-        versionSpan.textContent = r.version;
+        // Show the release title, strip leading "NullChat " if present
+        const displayName = (r.name || r.version).replace(/^nullchat\s*/i, '').trim();
+        versionSpan.textContent = displayName || r.version;
 
         const headerRight = document.createElement('div');
         headerRight.style.display = 'flex';
