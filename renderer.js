@@ -1365,6 +1365,8 @@ loadFriends();
 const updateBanner = document.getElementById('update-banner');
 const updateBannerFill = document.getElementById('update-banner-fill');
 const updateBannerText = document.getElementById('update-banner-text');
+const revokeBanner = document.getElementById('revoke-banner');
+const revokeBannerText = document.getElementById('revoke-banner-text');
 
 // Settings elements
 const settingsBtn = document.getElementById('settings-btn');
@@ -1792,6 +1794,13 @@ function renderVersionHistory() {
             headerRight.appendChild(badge);
         }
 
+        if (r.revoked) {
+            const badge = document.createElement('span');
+            badge.className = 'version-release-badge badge-revoked';
+            badge.textContent = 'REVOKED';
+            headerRight.appendChild(badge);
+        }
+
         const dateSpan = document.createElement('span');
         dateSpan.className = 'version-release-date';
         dateSpan.textContent = r.date;
@@ -1944,6 +1953,17 @@ updateBanner.addEventListener('click', async () => {
 window.electronAPI.onUpdateAvailable((data) => {
     cachedReleases = data.releases;
     cachedCurrentVersion = data.currentVersion;
+
+    // Show revoke warning if current version was revoked
+    if (data.isRevoked && revokeBanner) {
+        revokeBanner.style.display = 'block';
+        const recVer = data.recommendedVersion || 'the latest version';
+        revokeBannerText.innerHTML = `⚠️ Version ${data.revokedVersion} was revoked. It is recommended to switch to <b>${recVer}</b>. <u style="cursor:pointer">Download here</u>`;
+        revokeBanner.style.cursor = 'pointer';
+        revokeBanner.addEventListener('click', () => {
+            if (data.recommendedUrl) window.electronAPI.openExternal(data.recommendedUrl);
+        }, { once: true });
+    }
 
     if (data.hasUpdate) {
         updateBanner.style.display = 'block';

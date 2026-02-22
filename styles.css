@@ -536,6 +536,29 @@ body {
   transform: scale(1.01);
 }
 
+/* ── Revoke Warning Banner ──────────────────────────────────────────────── */
+.revoke-banner {
+  width: 100%;
+  background: linear-gradient(135deg, #ed4245, #e67e22);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  animation: fadeIn 0.4s ease;
+  margin-bottom: 4px;
+}
+
+.revoke-banner:hover {
+  filter: brightness(1.1);
+}
+
+.revoke-banner-text {
+  display: inline;
+}
+
 .update-banner.downloading {
   background: var(--bg-tertiary);
   cursor: default;
@@ -1068,6 +1091,11 @@ body {
 .version-release-badge.badge-new {
   background: rgba(114, 137, 218, 0.15);
   color: var(--accent);
+}
+
+.version-release-badge.badge-revoked {
+  background: rgba(237, 66, 69, 0.15);
+  color: var(--danger);
 }
 
 .version-release-date {

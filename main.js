@@ -89,8 +89,9 @@ async function checkForUpdates() {
             return;
         }
 
-        // Find the latest stable .exe asset URL
-        const latestStable = releases.find(r => !r.prerelease);
+        // Find the latest stable .exe asset URL (skip revoked releases)
+        const isRevoked = (r) => /^\[revoked\]/i.test((r.name || '').trim());
+        const latestStable = releases.find(r => !r.prerelease && !isRevoked(r));
         if (latestStable) {
             const exeAsset = (latestStable.assets || []).find(a => a.name && a.name.endsWith('.exe'));
             if (exeAsset) {
@@ -102,6 +103,12 @@ async function checkForUpdates() {
         const hasUpdate = latestStable && compareVersions(latestStable.tag_name, currentVersion) > 0;
         const settings = loadSettings();
 
+        // Check if user's current version has been revoked
+        const currentRevoked = releases.find(r => {
+            const tagVersion = r.tag_name.replace(/^v/, '');
+            return tagVersion === currentVersion && isRevoked(r);
+        });
+
         // Send ALL releases to renderer for Version History
         const allReleases = releases.map(r => ({
             version: r.tag_name,
@@ -109,7 +116,8 @@ async function checkForUpdates() {
             body: r.body || 'No changelog provided.',
             date: r.published_at ? new Date(r.published_at).toLocaleDateString() : '',
             url: r.html_url,
-            prerelease: !!r.prerelease
+            prerelease: !!r.prerelease,
+            revoked: isRevoked(r)
         }));
 
         if (hasUpdate) {
@@ -118,13 +126,21 @@ async function checkForUpdates() {
             log.info('App is up to date');
         }
 
+        if (currentRevoked) {
+            log.warn(`Current version ${currentVersion} has been REVOKED`);
+        }
+
         mainWindow.webContents.send('update-available', {
             currentVersion: currentVersion,
             latestVersion: latestStable ? latestStable.tag_name : currentVersion,
             hasUpdate: !!hasUpdate,
             hasExeAsset: !!latestExeAssetUrl,
             autoUpdate: settings.autoUpdate,
-            releases: allReleases
+            releases: allReleases,
+            isRevoked: !!currentRevoked,
+            revokedVersion: currentRevoked ? currentRevoked.tag_name : null,
+            recommendedVersion: latestStable ? latestStable.tag_name : null,
+            recommendedUrl: latestStable ? latestStable.html_url : null
         });
     } catch (err) {
         log.error(`Update check failed: ${err.message}`);
