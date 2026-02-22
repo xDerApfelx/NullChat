@@ -1566,9 +1566,9 @@ function stopSpeakerHighlight() {
 }
 
 // ── Settings Modal ──────────────────────────────────────────────────────────────
-settingsBtn.addEventListener('click', async () => {
-    await populateDeviceSelectors();
+settingsBtn.addEventListener('click', () => {
     settingsOverlay.style.display = 'flex';
+    populateDeviceSelectors(); // Run in background, don't block modal opening
 });
 
 settingsCloseBtn.addEventListener('click', () => {
