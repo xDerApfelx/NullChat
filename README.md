@@ -11,9 +11,10 @@ A minimalistic, secure, peer-to-peer (P2P) chat and voice application built with
 4. [How it Works](#how-it-works)
 5. [The Story behind NullChat 🚀](#the-story-behind-nullchat-🚀)
 6. [Why NullChat?](#why-nullchat)
-7. [Security & Privacy](#security--privacy)
-8. [Troubleshooting & Support](#troubleshooting--support)
-9. [License](#license)
+7. [Flaws & Limitations](#️-flaws--limitations)
+8. [Security & Privacy](#security--privacy)
+9. [Troubleshooting & Support](#troubleshooting--support)
+10. [License](#license)
 
 ---
 
@@ -102,6 +103,15 @@ I created NullChat almost entirely with the help of AI. This means:
 The name says it all. **Null** data permanently stored. **Null** tracking. **Null** account requirement.
 
 It’s intended for people who need a fast, private connection to friends without a big corporation sitting in the middle.
+
+If you're looking for a **Discord alternative** — it depends on your use case. The main thing most people use Discord for is just talking to friends, and NullChat does exactly that. Honestly, it's probably closer to a **TeamSpeak alternative** in spirit: lightweight, direct, no account, no overhead.
+
+### ⚠️ Flaws & Limitations
+Being honest matters. There are things NullChat intentionally *can't* do:
+
+- **Both users must be online at the same time.** Because there are no servers, there's no way to store or deliver messages when your friend is offline. It's a live connection — if they're not there, it doesn't work. This is the direct trade-off for having zero data storage.
+- **Windows only (for now).** No mobile or Mac support yet.
+- **No message history.** By design — everything lives in RAM and disappears when you close the app.
 
 ---
 
