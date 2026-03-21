@@ -4,6 +4,16 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const log = require('./logger');
 
+// ── Platform helper ────────────────────────────────────────────────────────────
+function getPlatformInstallerExtension() {
+    switch (process.platform) {
+        case 'win32': return '.exe';
+        case 'darwin': return '.dmg';
+        case 'linux': return '.AppImage';
+        default: return null;
+    }
+}
+
 // ── Debug Mode Setup ────────────────────────────────────────────────────────────
 const debugArg = process.argv.find(a => a.startsWith('--debug-instance'));
 const isDebugInstance = !!debugArg;
@@ -48,7 +58,7 @@ function loadOrCreateUserId() {
 // ── Update system ───────────────────────────────────────────────────────────────
 const GITHUB_REPO = 'xDerApfelx/NullChat';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
-let latestExeAssetUrl = ''; // Cached download URL for the latest .exe
+let latestInstallerAssetUrl = ''; // Cached download URL for the platform installer
 let downloadedInstallerPath = ''; // Path to downloaded installer
 
 function compareVersions(a, b) {
@@ -89,14 +99,17 @@ async function checkForUpdates() {
             return;
         }
 
-        // Find the latest stable .exe asset URL (skip revoked releases)
+        // Find the latest stable installer asset URL for this platform (skip revoked releases)
         const isRevoked = (r) => /^\[revoked\]/i.test((r.name || '').trim());
         const latestStable = releases.find(r => !r.prerelease && !isRevoked(r));
         if (latestStable) {
-            const exeAsset = (latestStable.assets || []).find(a => a.name && a.name.endsWith('.exe'));
-            if (exeAsset) {
-                latestExeAssetUrl = exeAsset.browser_download_url;
-                log.info(`Found installer asset: ${exeAsset.name}`);
+            const ext = getPlatformInstallerExtension();
+            const installerAsset = ext
+                ? (latestStable.assets || []).find(a => a.name && a.name.endsWith(ext))
+                : null;
+            if (installerAsset) {
+                latestInstallerAssetUrl = installerAsset.browser_download_url;
+                log.info(`Found installer asset: ${installerAsset.name}`);
             }
         }
 
@@ -134,7 +147,7 @@ async function checkForUpdates() {
             currentVersion: currentVersion,
             latestVersion: latestStable ? latestStable.tag_name : currentVersion,
             hasUpdate: !!hasUpdate,
-            hasExeAsset: !!latestExeAssetUrl,
+            hasInstallerAsset: !!latestInstallerAssetUrl,
             autoUpdate: settings.autoUpdate,
             releases: allReleases,
             isRevoked: !!currentRevoked,
@@ -152,7 +165,7 @@ let isDownloading = false;
 
 ipcMain.handle('download-update', async () => {
     if (isDownloading) return { success: false, error: 'Download already in progress' };
-    if (!latestExeAssetUrl) {
+    if (!latestInstallerAssetUrl) {
         log.warn('No installer asset URL available');
         return { success: false, error: 'No installer found' };
     }
@@ -162,7 +175,7 @@ ipcMain.handle('download-update', async () => {
     const { net } = require('electron');
 
     try {
-        const response = await net.fetch(latestExeAssetUrl, {
+        const response = await net.fetch(latestInstallerAssetUrl, {
             headers: { 'User-Agent': 'NullChat-Updater' }
         });
 
@@ -174,7 +187,7 @@ ipcMain.handle('download-update', async () => {
 
         const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
         const tempDir = app.getPath('temp');
-        const fileName = latestExeAssetUrl.split('/').pop() || 'NullChat-Setup.exe';
+        const fileName = latestInstallerAssetUrl.split('/').pop() || `NullChat-Setup${getPlatformInstallerExtension() || ''}`;
         downloadedInstallerPath = path.join(tempDir, fileName);
 
         const fileStream = fs.createWriteStream(downloadedInstallerPath);
@@ -221,8 +234,29 @@ ipcMain.handle('install-update', () => {
     }
 
     log.info('Launching installer and quitting...');
-    const { spawn } = require('child_process');
-    spawn(downloadedInstallerPath, [], { detached: true, stdio: 'ignore' }).unref();
+
+    switch (process.platform) {
+        case 'win32': {
+            const { spawn } = require('child_process');
+            spawn(downloadedInstallerPath, [], { detached: true, stdio: 'ignore' }).unref();
+            break;
+        }
+        case 'darwin': {
+            shell.openPath(downloadedInstallerPath);
+            break;
+        }
+        case 'linux': {
+            fs.chmodSync(downloadedInstallerPath, 0o755);
+            const { spawn } = require('child_process');
+            spawn(downloadedInstallerPath, [], { detached: true, stdio: 'ignore' }).unref();
+            break;
+        }
+        default:
+            log.warn('Unsupported platform for auto-install: ' + process.platform);
+            shell.showItemInFolder(downloadedInstallerPath);
+            return false;
+    }
+
     app.quit();
     return true;
 });
@@ -248,7 +282,9 @@ function createWindow() {
         }
     });
 
-    mainWindow.setMenuBarVisibility(false);
+    if (process.platform !== 'darwin') {
+        mainWindow.setMenuBarVisibility(false);
+    }
     mainWindow.loadFile('index.html');
 
     mainWindow.once('ready-to-show', () => {

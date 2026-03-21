@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "2.1.0",
+    "version": "2.2.1",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "main": "main.js",
     "scripts": {
@@ -8,7 +8,11 @@
         "debug1": "electron . --debug-instance=1",
         "debug2": "electron . --debug-instance=2",
         "debug3": "electron . --debug-instance=3",
-        "make": "electron-builder --win --x64"
+        "make": "electron-builder --win --x64",
+        "make:win": "electron-builder --win --x64",
+        "make:mac": "electron-builder --mac --x64 --arm64",
+        "make:linux": "electron-builder --linux --x64",
+        "make:all": "electron-builder --win --x64 --mac --x64 --arm64 --linux --x64"
     },
     "dependencies": {
         "peerjs": "^1.5.5",
@@ -24,6 +28,24 @@
         "win": {
             "target": "nsis",
             "icon": "assets/icon.ico"
+        },
+        "mac": {
+            "target": [
+                "dmg",
+                "zip"
+            ],
+            "icon": "assets/icon.icns",
+            "category": "public.app-category.social-networking",
+            "artifactName": "${productName}-${version}-mac.${ext}"
+        },
+        "linux": {
+            "target": [
+                "AppImage",
+                "deb"
+            ],
+            "icon": "assets/icon.png",
+            "category": "Network;Chat;InstantMessaging",
+            "artifactName": "${productName}-${version}-linux.${ext}"
         },
         "nsis": {
             "oneClick": false,

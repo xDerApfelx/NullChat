@@ -1968,16 +1968,16 @@ window.electronAPI.onUpdateAvailable((data) => {
     if (data.hasUpdate) {
         updateBanner.style.display = 'block';
 
-        if (data.autoUpdate && data.hasExeAsset) {
+        if (data.autoUpdate && data.hasInstallerAsset) {
             // Auto-download: immediately start
             updateState = 'available';
             startDownload();
-        } else if (data.hasExeAsset) {
+        } else if (data.hasInstallerAsset) {
             // Manual: show blue banner
             updateState = 'available';
             updateBannerText.textContent = `🔔 Update ${data.latestVersion} available — click to download`;
         } else {
-            // No .exe asset: fallback to external link
+            // No installer asset for this platform: fallback to external link
             updateState = 'external-only';
             updateBannerText.textContent = `🔔 Update ${data.latestVersion} available`;
             updateBanner.addEventListener('click', () => {

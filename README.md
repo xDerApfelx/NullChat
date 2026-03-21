@@ -26,9 +26,13 @@ NullChat comes in two flavors right now:
 
 *   🟢 **Stable (v2.1.0):** Recommended for everyone. Includes Group Chat (Mesh), Full Audio Controls, Integrated Updates, and Settings.
 
-NullChat comes as a standard Windows installer (`.exe`).
-- **Optional Shortcuts:** The installer lets you choose whether to create desktop or start menu shortcuts during setup.
-- **No Admin Rights Needed:** By default, it installs to your local user folder, so you don't even need administrator privileges.
+NullChat is available for **Windows**, **macOS**, and **Linux**:
+
+*   🪟 **Windows:** Standard installer (`.exe`) — optional shortcuts, no admin rights needed.
+*   🍎 **macOS:** DMG image (`.dmg`) — drag to Applications to install. *Note: The app is unsigned, so you may need to right-click → "Open" on first launch.*
+*   🐧 **Linux:** AppImage (`.AppImage`) or `.deb` package.
+    *   **AppImage:** Runs on virtually any Linux distro (Ubuntu, Fedora, Arch, openSUSE, Manjaro, Mint, etc.) — no installation needed, just make executable and run.
+    *   **`.deb`:** For Debian-based distros (Ubuntu, Linux Mint, Pop!_OS, elementary OS, etc.).
 
 ---
 
@@ -110,7 +114,7 @@ If you're looking for a **Discord alternative** — it depends on your use case.
 Being honest matters. There are things NullChat intentionally *can't* do:
 
 - **Both users must be online at the same time.** Because there are no servers, there's no way to store or deliver messages when your friend is offline. It's a live connection — if they're not there, it doesn't work. This is the direct trade-off for having zero data storage.
-- **Windows only (for now).** No mobile or Mac support yet.
+- **Desktop only.** Available for Windows, macOS, and Linux — but no mobile support yet.
 - **No message history.** By design — everything lives in RAM and disappears when you close the app.
 
 ---
@@ -132,7 +136,9 @@ Encountering issues? We're here to help!
     3.  **Log files** from all involved peers (if possible).
     
     **Where to find logs:**
-    *   Press `Win + R`, type `%APPDATA%\nullchat\logs`, and press Enter.
+    *   **Windows:** Press `Win + R`, type `%APPDATA%\nullchat\logs`, and press Enter.
+    *   **macOS:** Open Finder → Go → Go to Folder → `~/Library/Application Support/nullchat/logs`
+    *   **Linux:** Open a terminal and navigate to `~/.config/nullchat/logs`
     *   You will see a file named `nullchat.log`.
     
     **Report issues here:** [Open an issue on GitHub](https://github.com/xDerApfelx/NullChat/issues) and drag & drop the log file into the description.
