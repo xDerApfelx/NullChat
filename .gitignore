@@ -6,3 +6,4 @@ config.json
 *.exe
 *.zip
 *.dmg
+logs/
