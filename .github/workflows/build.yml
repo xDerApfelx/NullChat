@@ -44,10 +44,9 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx electron-builder ${{ matrix.args }}
+        run: npx electron-builder ${{ matrix.args }} --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: electron-builder
 
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v2
