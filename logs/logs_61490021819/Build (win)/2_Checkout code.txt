@@ -1,0 +1,75 @@
+﻿2026-03-21T17:23:55.9621454Z ##[group]Run actions/checkout@v4
+2026-03-21T17:23:55.9623565Z with:
+2026-03-21T17:23:55.9624438Z   repository: xDerApfelx/NullChat
+2026-03-21T17:23:55.9625943Z   token: ***
+2026-03-21T17:23:55.9626745Z   ssh-strict: true
+2026-03-21T17:23:55.9627578Z   ssh-user: git
+2026-03-21T17:23:55.9628415Z   persist-credentials: true
+2026-03-21T17:23:55.9629380Z   clean: true
+2026-03-21T17:23:55.9630224Z   sparse-checkout-cone-mode: true
+2026-03-21T17:23:55.9631235Z   fetch-depth: 1
+2026-03-21T17:23:55.9631881Z   fetch-tags: false
+2026-03-21T17:23:55.9632591Z   show-progress: true
+2026-03-21T17:23:55.9633275Z   lfs: false
+2026-03-21T17:23:55.9633906Z   submodules: false
+2026-03-21T17:23:55.9634605Z   set-safe-directory: true
+2026-03-21T17:23:55.9635577Z ##[endgroup]
+2026-03-21T17:23:56.1930654Z Syncing repository: xDerApfelx/NullChat
+2026-03-21T17:23:56.1933429Z ##[group]Getting Git version info
+2026-03-21T17:23:56.1934532Z Working directory is 'D:\a\NullChat\NullChat'
+2026-03-21T17:23:56.2973470Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-03-21T17:23:56.6561393Z git version 2.53.0.windows.1
+2026-03-21T17:23:56.6619948Z ##[endgroup]
+2026-03-21T17:23:56.6666656Z Temporarily overriding HOME='D:\a\_temp\8d9d6425-282e-4d60-9f2d-1f8b116e240b' before making global git config changes
+2026-03-21T17:23:56.6670137Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-21T17:23:56.6673621Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\NullChat\NullChat
+2026-03-21T17:23:56.7207081Z Deleting the contents of 'D:\a\NullChat\NullChat'
+2026-03-21T17:23:56.7214660Z ##[group]Initializing the repository
+2026-03-21T17:23:56.7224577Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\NullChat\NullChat
+2026-03-21T17:23:56.8341660Z Initialized empty Git repository in D:/a/NullChat/NullChat/.git/
+2026-03-21T17:23:56.8392415Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/xDerApfelx/NullChat
+2026-03-21T17:23:56.8915948Z ##[endgroup]
+2026-03-21T17:23:56.8918226Z ##[group]Disabling automatic garbage collection
+2026-03-21T17:23:56.8926236Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-03-21T17:23:56.9262500Z ##[endgroup]
+2026-03-21T17:23:56.9264201Z ##[group]Setting up auth
+2026-03-21T17:23:56.9274363Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-03-21T17:23:56.9617506Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-03-21T17:23:58.3021031Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-21T17:23:58.3325600Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-03-21T17:23:58.8693814Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-03-21T17:23:58.8985404Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-03-21T17:23:59.3945308Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-03-21T17:23:59.4248437Z ##[endgroup]
+2026-03-21T17:23:59.4249086Z ##[group]Fetching the repository
+2026-03-21T17:23:59.4263016Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +da613a9691f8ef6e391a6c448e7daa70b85b522b:refs/tags/v2.2.1
+2026-03-21T17:24:00.8311784Z From https://github.com/xDerApfelx/NullChat
+2026-03-21T17:24:00.8312390Z  * [new ref]         da613a9691f8ef6e391a6c448e7daa70b85b522b -> v2.2.1
+2026-03-21T17:24:00.8784295Z ##[endgroup]
+2026-03-21T17:24:00.8785012Z ##[group]Determining the checkout info
+2026-03-21T17:24:00.8787734Z ##[endgroup]
+2026-03-21T17:24:00.8798769Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-03-21T17:24:00.9272989Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-03-21T17:24:00.9590414Z ##[group]Checking out the ref
+2026-03-21T17:24:00.9602348Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/tags/v2.2.1
+2026-03-21T17:24:01.0902830Z Note: switching to 'refs/tags/v2.2.1'.
+2026-03-21T17:24:01.0903256Z 
+2026-03-21T17:24:01.0903777Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-03-21T17:24:01.0905144Z changes and commit them, and you can discard any commits you make in this
+2026-03-21T17:24:01.0906110Z state without impacting any branches by switching back to a branch.
+2026-03-21T17:24:01.0906640Z 
+2026-03-21T17:24:01.0906924Z If you want to create a new branch to retain commits you create, you may
+2026-03-21T17:24:01.0908026Z do so (now or later) by using -c with the switch command. Example:
+2026-03-21T17:24:01.0908465Z 
+2026-03-21T17:24:01.0908640Z   git switch -c <new-branch-name>
+2026-03-21T17:24:01.0908961Z 
+2026-03-21T17:24:01.0909104Z Or undo this operation with:
+2026-03-21T17:24:01.0909398Z 
+2026-03-21T17:24:01.0909531Z   git switch -
+2026-03-21T17:24:01.0909706Z 
+2026-03-21T17:24:01.0910043Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-03-21T17:24:01.0910554Z 
+2026-03-21T17:24:01.0910955Z HEAD is now at da613a9 fix: pin Ubuntu 22.04 runner and add debug output for CI builds
+2026-03-21T17:24:01.0990483Z ##[endgroup]
+2026-03-21T17:24:01.1459822Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-03-21T17:24:01.1753861Z da613a9691f8ef6e391a6c448e7daa70b85b522b

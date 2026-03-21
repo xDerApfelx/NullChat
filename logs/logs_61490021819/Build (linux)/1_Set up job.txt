@@ -1,0 +1,32 @@
+﻿2026-03-21T17:23:48.4911439Z Current runner version: '2.332.0'
+2026-03-21T17:23:48.4938317Z ##[group]Runner Image Provisioner
+2026-03-21T17:23:48.4939212Z Hosted Compute Agent
+2026-03-21T17:23:48.4939824Z Version: 20260213.493
+2026-03-21T17:23:48.4940516Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-03-21T17:23:48.4941254Z Build Date: 2026-02-13T00:28:41Z
+2026-03-21T17:23:48.4941936Z Worker ID: {79ca4c43-c05b-40d3-9f18-45cd1a398af9}
+2026-03-21T17:23:48.4942580Z Azure Region: eastus
+2026-03-21T17:23:48.4943225Z ##[endgroup]
+2026-03-21T17:23:48.4944602Z ##[group]Operating System
+2026-03-21T17:23:48.4945241Z Ubuntu
+2026-03-21T17:23:48.4945819Z 22.04.5
+2026-03-21T17:23:48.4946290Z LTS
+2026-03-21T17:23:48.4946932Z ##[endgroup]
+2026-03-21T17:23:48.4947514Z ##[group]Runner Image
+2026-03-21T17:23:48.4948070Z Image: ubuntu-22.04
+2026-03-21T17:23:48.4948595Z Version: 20260309.57.1
+2026-03-21T17:23:48.4949628Z Included Software: https://github.com/actions/runner-images/blob/ubuntu22/20260309.57/images/ubuntu/Ubuntu2204-Readme.md
+2026-03-21T17:23:48.4951327Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu22%2F20260309.57
+2026-03-21T17:23:48.4952219Z ##[endgroup]
+2026-03-21T17:23:48.4953186Z ##[group]GITHUB_TOKEN Permissions
+2026-03-21T17:23:48.4955294Z Contents: write
+2026-03-21T17:23:48.4955940Z Metadata: read
+2026-03-21T17:23:48.4956421Z ##[endgroup]
+2026-03-21T17:23:48.4958992Z Secret source: Actions
+2026-03-21T17:23:48.4959946Z Prepare workflow directory
+2026-03-21T17:23:48.5289299Z Prepare all required actions
+2026-03-21T17:23:48.5327933Z Getting action download info
+2026-03-21T17:23:48.8190358Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-03-21T17:23:49.3614867Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-03-21T17:23:49.4938477Z Download action repository 'softprops/action-gh-release@v2' (SHA:153bb8e04406b158c6c84fc1615b65b24149a1fe)
+2026-03-21T17:23:49.7640531Z Complete job name: Build (linux)

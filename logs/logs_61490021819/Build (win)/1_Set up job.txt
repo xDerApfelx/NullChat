@@ -1,0 +1,32 @@
+﻿2026-03-21T17:23:52.8102592Z Current runner version: '2.332.0'
+2026-03-21T17:23:52.8438315Z ##[group]Runner Image Provisioner
+2026-03-21T17:23:52.8439187Z Hosted Compute Agent
+2026-03-21T17:23:52.8439677Z Version: 20260213.493
+2026-03-21T17:23:52.8440280Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-03-21T17:23:52.8440879Z Build Date: 2026-02-13T00:28:41Z
+2026-03-21T17:23:52.8441443Z Worker ID: {e119f015-12db-4650-a358-32ca66de5b35}
+2026-03-21T17:23:52.8442092Z Azure Region: westus2
+2026-03-21T17:23:52.8442574Z ##[endgroup]
+2026-03-21T17:23:52.8443787Z ##[group]Operating System
+2026-03-21T17:23:52.8444381Z Microsoft Windows Server 2025
+2026-03-21T17:23:52.8444890Z 10.0.26100
+2026-03-21T17:23:52.8445268Z Datacenter
+2026-03-21T17:23:52.8445675Z ##[endgroup]
+2026-03-21T17:23:52.8446067Z ##[group]Runner Image
+2026-03-21T17:23:52.8446537Z Image: windows-2025
+2026-03-21T17:23:52.8446950Z Version: 20260302.43.1
+2026-03-21T17:23:52.8447876Z Included Software: https://github.com/actions/runner-images/blob/win25/20260302.43/images/windows/Windows2025-Readme.md
+2026-03-21T17:23:52.8449588Z Image Release: https://github.com/actions/runner-images/releases/tag/win25%2F20260302.43
+2026-03-21T17:23:52.8450398Z ##[endgroup]
+2026-03-21T17:23:52.8451298Z ##[group]GITHUB_TOKEN Permissions
+2026-03-21T17:23:52.8452987Z Contents: write
+2026-03-21T17:23:52.8453496Z Metadata: read
+2026-03-21T17:23:52.8453969Z ##[endgroup]
+2026-03-21T17:23:52.8455916Z Secret source: Actions
+2026-03-21T17:23:52.8456568Z Prepare workflow directory
+2026-03-21T17:23:52.9692036Z Prepare all required actions
+2026-03-21T17:23:52.9730039Z Getting action download info
+2026-03-21T17:23:53.3791381Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-03-21T17:23:53.5572355Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-03-21T17:23:53.8022102Z Download action repository 'softprops/action-gh-release@v2' (SHA:153bb8e04406b158c6c84fc1615b65b24149a1fe)
+2026-03-21T17:23:54.7536977Z Complete job name: Build (win)

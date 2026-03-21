@@ -1,0 +1,638 @@
+﻿2026-03-21T17:23:52.8125674Z Current runner version: '2.332.0'
+2026-03-21T17:23:52.8438346Z ##[group]Runner Image Provisioner
+2026-03-21T17:23:52.8439194Z Hosted Compute Agent
+2026-03-21T17:23:52.8439681Z Version: 20260213.493
+2026-03-21T17:23:52.8440284Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-03-21T17:23:52.8440883Z Build Date: 2026-02-13T00:28:41Z
+2026-03-21T17:23:52.8441447Z Worker ID: {e119f015-12db-4650-a358-32ca66de5b35}
+2026-03-21T17:23:52.8442096Z Azure Region: westus2
+2026-03-21T17:23:52.8442578Z ##[endgroup]
+2026-03-21T17:23:52.8443798Z ##[group]Operating System
+2026-03-21T17:23:52.8444386Z Microsoft Windows Server 2025
+2026-03-21T17:23:52.8444893Z 10.0.26100
+2026-03-21T17:23:52.8445271Z Datacenter
+2026-03-21T17:23:52.8445678Z ##[endgroup]
+2026-03-21T17:23:52.8446071Z ##[group]Runner Image
+2026-03-21T17:23:52.8446541Z Image: windows-2025
+2026-03-21T17:23:52.8446954Z Version: 20260302.43.1
+2026-03-21T17:23:52.8448250Z Included Software: https://github.com/actions/runner-images/blob/win25/20260302.43/images/windows/Windows2025-Readme.md
+2026-03-21T17:23:52.8449594Z Image Release: https://github.com/actions/runner-images/releases/tag/win25%2F20260302.43
+2026-03-21T17:23:52.8450402Z ##[endgroup]
+2026-03-21T17:23:52.8451302Z ##[group]GITHUB_TOKEN Permissions
+2026-03-21T17:23:52.8453005Z Contents: write
+2026-03-21T17:23:52.8453500Z Metadata: read
+2026-03-21T17:23:52.8453973Z ##[endgroup]
+2026-03-21T17:23:52.8455930Z Secret source: Actions
+2026-03-21T17:23:52.8456573Z Prepare workflow directory
+2026-03-21T17:23:52.9692076Z Prepare all required actions
+2026-03-21T17:23:52.9730069Z Getting action download info
+2026-03-21T17:23:53.3791429Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-03-21T17:23:53.5572399Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-03-21T17:23:53.8022177Z Download action repository 'softprops/action-gh-release@v2' (SHA:153bb8e04406b158c6c84fc1615b65b24149a1fe)
+2026-03-21T17:23:54.7537019Z Complete job name: Build (win)
+2026-03-21T17:23:55.9621508Z ##[group]Run actions/checkout@v4
+2026-03-21T17:23:55.9623588Z with:
+2026-03-21T17:23:55.9624445Z   repository: xDerApfelx/NullChat
+2026-03-21T17:23:55.9625958Z   token: ***
+2026-03-21T17:23:55.9626751Z   ssh-strict: true
+2026-03-21T17:23:55.9627584Z   ssh-user: git
+2026-03-21T17:23:55.9628421Z   persist-credentials: true
+2026-03-21T17:23:55.9629385Z   clean: true
+2026-03-21T17:23:55.9630230Z   sparse-checkout-cone-mode: true
+2026-03-21T17:23:55.9631239Z   fetch-depth: 1
+2026-03-21T17:23:55.9631896Z   fetch-tags: false
+2026-03-21T17:23:55.9632595Z   show-progress: true
+2026-03-21T17:23:55.9633279Z   lfs: false
+2026-03-21T17:23:55.9633910Z   submodules: false
+2026-03-21T17:23:55.9634609Z   set-safe-directory: true
+2026-03-21T17:23:55.9635588Z ##[endgroup]
+2026-03-21T17:23:56.1930708Z Syncing repository: xDerApfelx/NullChat
+2026-03-21T17:23:56.1933457Z ##[group]Getting Git version info
+2026-03-21T17:23:56.1934539Z Working directory is 'D:\a\NullChat\NullChat'
+2026-03-21T17:23:56.2973631Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-03-21T17:23:56.6561472Z git version 2.53.0.windows.1
+2026-03-21T17:23:56.6619994Z ##[endgroup]
+2026-03-21T17:23:56.6666702Z Temporarily overriding HOME='D:\a\_temp\8d9d6425-282e-4d60-9f2d-1f8b116e240b' before making global git config changes
+2026-03-21T17:23:56.6670161Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-21T17:23:56.6673650Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\NullChat\NullChat
+2026-03-21T17:23:56.7207162Z Deleting the contents of 'D:\a\NullChat\NullChat'
+2026-03-21T17:23:56.7214695Z ##[group]Initializing the repository
+2026-03-21T17:23:56.7224605Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\NullChat\NullChat
+2026-03-21T17:23:56.8341742Z Initialized empty Git repository in D:/a/NullChat/NullChat/.git/
+2026-03-21T17:23:56.8392510Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/xDerApfelx/NullChat
+2026-03-21T17:23:56.8916022Z ##[endgroup]
+2026-03-21T17:23:56.8918253Z ##[group]Disabling automatic garbage collection
+2026-03-21T17:23:56.8926286Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-03-21T17:23:56.9262564Z ##[endgroup]
+2026-03-21T17:23:56.9264219Z ##[group]Setting up auth
+2026-03-21T17:23:56.9274394Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-03-21T17:23:56.9617575Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-03-21T17:23:58.3021101Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-21T17:23:58.3325710Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-03-21T17:23:58.8693876Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-03-21T17:23:58.8985461Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-03-21T17:23:59.3945374Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-03-21T17:23:59.4248483Z ##[endgroup]
+2026-03-21T17:23:59.4249107Z ##[group]Fetching the repository
+2026-03-21T17:23:59.4263043Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +da613a9691f8ef6e391a6c448e7daa70b85b522b:refs/tags/v2.2.1
+2026-03-21T17:24:00.8311836Z From https://github.com/xDerApfelx/NullChat
+2026-03-21T17:24:00.8518689Z  * [new ref]         da613a9691f8ef6e391a6c448e7daa70b85b522b -> v2.2.1
+2026-03-21T17:24:00.8784350Z ##[endgroup]
+2026-03-21T17:24:00.8785024Z ##[group]Determining the checkout info
+2026-03-21T17:24:00.8787750Z ##[endgroup]
+2026-03-21T17:24:00.8798795Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-03-21T17:24:00.9273049Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-03-21T17:24:00.9590457Z ##[group]Checking out the ref
+2026-03-21T17:24:00.9602381Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/tags/v2.2.1
+2026-03-21T17:24:01.0902862Z Note: switching to 'refs/tags/v2.2.1'.
+2026-03-21T17:24:01.0903264Z 
+2026-03-21T17:24:01.0903793Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-03-21T17:24:01.0905161Z changes and commit them, and you can discard any commits you make in this
+2026-03-21T17:24:01.0906150Z state without impacting any branches by switching back to a branch.
+2026-03-21T17:24:01.0906647Z 
+2026-03-21T17:24:01.0906929Z If you want to create a new branch to retain commits you create, you may
+2026-03-21T17:24:01.0908035Z do so (now or later) by using -c with the switch command. Example:
+2026-03-21T17:24:01.0908470Z 
+2026-03-21T17:24:01.0908658Z   git switch -c <new-branch-name>
+2026-03-21T17:24:01.0908968Z 
+2026-03-21T17:24:01.0909109Z Or undo this operation with:
+2026-03-21T17:24:01.0909402Z 
+2026-03-21T17:24:01.0909536Z   git switch -
+2026-03-21T17:24:01.0909711Z 
+2026-03-21T17:24:01.0910048Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-03-21T17:24:01.0910559Z 
+2026-03-21T17:24:01.0910961Z HEAD is now at da613a9 fix: pin Ubuntu 22.04 runner and add debug output for CI builds
+2026-03-21T17:24:01.0990501Z ##[endgroup]
+2026-03-21T17:24:01.1459854Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-03-21T17:24:01.1753894Z da613a9691f8ef6e391a6c448e7daa70b85b522b
+2026-03-21T17:24:01.6243023Z ##[group]Run actions/setup-node@v4
+2026-03-21T17:24:01.6243339Z with:
+2026-03-21T17:24:01.6243527Z   node-version: 22
+2026-03-21T17:24:01.6243705Z   cache: npm
+2026-03-21T17:24:01.6243877Z   always-auth: false
+2026-03-21T17:24:01.6244068Z   check-latest: false
+2026-03-21T17:24:01.6244551Z   token: ***
+2026-03-21T17:24:01.6244720Z ##[endgroup]
+2026-03-21T17:24:01.9504110Z Found in cache @ C:\hostedtoolcache\windows\node\22.22.0\x64
+2026-03-21T17:24:01.9519805Z ##[group]Environment details
+2026-03-21T17:24:06.7061973Z node: v22.22.0
+2026-03-21T17:24:06.7062194Z npm: 10.9.4
+2026-03-21T17:24:06.7062345Z yarn: 1.22.22
+2026-03-21T17:24:06.7063931Z ##[endgroup]
+2026-03-21T17:24:06.7927251Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\hostedtoolcache\windows\node\22.22.0\x64\npm.cmd config get cache"
+2026-03-21T17:24:07.3115472Z C:\npm\cache
+2026-03-21T17:24:07.8464193Z npm cache is not found
+2026-03-21T17:24:08.2004145Z ##[group]Run npm ci
+2026-03-21T17:24:08.2004471Z [36;1mnpm ci[0m
+2026-03-21T17:24:08.2857302Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-03-21T17:24:08.2857689Z ##[endgroup]
+2026-03-21T17:24:17.2481535Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-03-21T17:24:17.5014237Z npm warn deprecated npmlog@6.0.2: This package is no longer supported.
+2026-03-21T17:24:17.5788875Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-03-21T17:24:18.3997962Z npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-21T17:24:18.6810207Z npm warn deprecated @npmcli/move-file@2.0.1: This functionality has been moved to @npmcli/fs
+2026-03-21T17:24:18.8850857Z npm warn deprecated glob@8.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-21T17:24:18.8881167Z npm warn deprecated are-we-there-yet@3.0.1: This package is no longer supported.
+2026-03-21T17:24:19.4555798Z npm warn deprecated gauge@4.0.4: This package is no longer supported.
+2026-03-21T17:24:19.5412907Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-03-21T17:24:19.7262473Z npm warn deprecated tar@6.2.1: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-21T17:24:21.4795510Z npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-21T17:24:30.5968024Z 
+2026-03-21T17:24:30.5968848Z added 411 packages, and audited 412 packages in 17s
+2026-03-21T17:24:30.5969817Z 
+2026-03-21T17:24:30.5970295Z 66 packages are looking for funding
+2026-03-21T17:24:30.5970713Z   run `npm fund` for details
+2026-03-21T17:24:30.6409814Z 
+2026-03-21T17:24:30.6410290Z 13 vulnerabilities (2 low, 1 moderate, 10 high)
+2026-03-21T17:24:30.6410907Z 
+2026-03-21T17:24:30.6411705Z To address issues that do not require attention, run:
+2026-03-21T17:24:30.6412202Z   npm audit fix
+2026-03-21T17:24:30.6412401Z 
+2026-03-21T17:24:30.6412770Z To address all issues (including breaking changes), run:
+2026-03-21T17:24:30.6413643Z   npm audit fix --force
+2026-03-21T17:24:30.6413864Z 
+2026-03-21T17:24:30.6414029Z Run `npm audit` for details.
+2026-03-21T17:24:32.7514021Z ##[group]Run npx electron-builder --win --x64
+2026-03-21T17:24:32.7514434Z [36;1mnpx electron-builder --win --x64[0m
+2026-03-21T17:24:32.7572338Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-03-21T17:24:32.7572649Z env:
+2026-03-21T17:24:32.7573007Z   GH_TOKEN: ***
+2026-03-21T17:24:32.7573184Z   DEBUG: electron-builder
+2026-03-21T17:24:32.7573368Z ##[endgroup]
+2026-03-21T17:24:34.8797031Z   • electron-builder  version=25.1.8 os=10.0.26100
+2026-03-21T17:24:34.8803837Z   • artifacts will be published  reason=tag is defined tag=v2.2.1
+2026-03-21T17:24:34.8846791Z   • loaded configuration  file=package.json ("build" field)
+2026-03-21T17:24:34.8884062Z   • effective config  config=directories:
+2026-03-21T17:24:34.8884590Z   output: dist
+2026-03-21T17:24:34.8884905Z   buildResources: build
+2026-03-21T17:24:34.8885294Z appId: com.nullchat.app
+2026-03-21T17:24:34.8885677Z productName: NullChat
+2026-03-21T17:24:34.8885938Z win:
+2026-03-21T17:24:34.8886232Z   target: nsis
+2026-03-21T17:24:34.8886857Z   icon: assets/icon.ico
+2026-03-21T17:24:34.8887189Z mac:
+2026-03-21T17:24:34.8887337Z   target:
+2026-03-21T17:24:34.8887501Z     - dmg
+2026-03-21T17:24:34.8887674Z     - zip
+2026-03-21T17:24:34.8887835Z   icon: assets/icon.icns
+2026-03-21T17:24:34.8888145Z   category: public.app-category.social-networking
+2026-03-21T17:24:34.8888514Z   artifactName: ${productName}-${version}-mac.${ext}
+2026-03-21T17:24:34.8888781Z linux:
+2026-03-21T17:24:34.8888927Z   target:
+2026-03-21T17:24:34.8889074Z     - AppImage
+2026-03-21T17:24:34.8889297Z     - deb
+2026-03-21T17:24:34.8889575Z   icon: assets/icon.png
+2026-03-21T17:24:34.8890046Z   category: Network;Chat;InstantMessaging
+2026-03-21T17:24:34.8890647Z   artifactName: ${productName}-${version}-linux.${ext}
+2026-03-21T17:24:34.8891472Z nsis:
+2026-03-21T17:24:34.8891738Z   oneClick: false
+2026-03-21T17:24:34.8893036Z   allowToChangeInstallationDirectory: true
+2026-03-21T17:24:34.8893358Z   allowElevation: true
+2026-03-21T17:24:34.8893571Z   runAfterFinish: true
+2026-03-21T17:24:34.8893794Z   createDesktopShortcut: true
+2026-03-21T17:24:34.8894053Z   createStartMenuShortcut: true
+2026-03-21T17:24:34.8894438Z   uninstallDisplayName: NullChat Messenger
+2026-03-21T17:24:34.8895574Z   artifactName: ${productName}-Setup-${version}.${ext}
+2026-03-21T17:24:34.8896457Z files:
+2026-03-21T17:24:34.8896703Z   - filter:
+2026-03-21T17:24:34.8896963Z       - main.js
+2026-03-21T17:24:34.8897264Z       - preload.js
+2026-03-21T17:24:34.8897571Z       - index.html
+2026-03-21T17:24:34.8897863Z       - renderer.js
+2026-03-21T17:24:34.8898174Z       - styles.css
+2026-03-21T17:24:34.8898463Z       - logger.js
+2026-03-21T17:24:34.8898797Z       - package.json
+2026-03-21T17:24:34.8899110Z       - assets
+2026-03-21T17:24:34.8899286Z 
+2026-03-21T17:24:34.8900081Z   • author is missed in the package.json  appPackageFile=D:\a\NullChat\NullChat\package.json
+2026-03-21T17:24:35.0569177Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe node-dep-tree --dir D:\a\NullChat\NullChat
+2026-03-21T17:24:35.0873735Z   • exited          command=app-builder.exe code=0 pid=9364 out=[{"dir":"D:\\a\\NullChat\\NullChat\\node_modules","deps":[{"name":"@msgpack/msgpack","version":"2.8.0"},{"name":"eventemitter3","version":"4.0.7"},{"name":"peerjs","version":"1.5.5"},{"name":"peerjs-js-binarypack","version":"2.1.0"},{"name":"sdp","version":"3.2.1"},{"name":"uuid","version":"13.0.0"},{"name":"webrtc-adapter","version":"9.0.3"}]}]
+2026-03-21T17:24:35.0876226Z   • executing @electron/rebuild  electronVersion=34.5.8 arch=x64 buildFromSource=false appDir=./
+2026-03-21T17:24:35.0889012Z   • installing native dependencies  arch=x64
+2026-03-21T17:24:35.7238818Z   • completed installing native dependencies
+2026-03-21T17:24:35.7306780Z   • packaging       platform=win32 arch=x64 electron=34.5.8 appOutDir=dist\win-unpacked
+2026-03-21T17:24:35.7326655Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe unpack-electron --configuration [{"platform":"win32","arch":"x64","version":"34.5.8"}] --output D:\a\NullChat\NullChat\dist\win-unpacked --distMacOsAppName Electron.app
+2026-03-21T17:24:35.7487742Z   • map async       taskCount=2
+2026-03-21T17:24:35.7488325Z   • map async       taskCount=1
+2026-03-21T17:24:35.8339393Z   • computing effective URL  initialUrl=https://github.com/electron/electron/releases/download/v34.5.8/electron-v34.5.8-win32-x64.zip
+2026-03-21T17:24:35.8345959Z                              currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/9384267/cf097583-92b1-490b-99fe-e4e7cca3cdb2?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-21T18%3A09%3A58Z&rscd=attachment%3B+filename%3Delectron-v34.5.8-win32-x64.zip&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-21T17%3A09%3A18Z&ske=2026-03-21T18%3A09%3A58Z&sks=b&skv=2018-11-09&sig=7a3gzF1REWL25YLuqUMTEzonNZLKka7ZQ6kv1NN95xM%3D&jwt=***
+2026-03-21T17:24:35.8734609Z   • downloading     url=https://github.com/electron/electron/releases/download/v34.5.8/electron-v34.5.8-win32-x64.zip length=116216928 contentType=application/octet-stream
+2026-03-21T17:24:35.8736682Z   • downloading     url=https://github.com/electron/electron/releases/download/v34.5.8/electron-v34.5.8-win32-x64.zip size=116 MB parts=8
+2026-03-21T17:24:35.8737885Z   • map async       taskCount=8
+2026-03-21T17:24:35.8738547Z   • download part   range=bytes=101689812-116216927 index=7
+2026-03-21T17:24:35.8740024Z   • download part   range=bytes=58108464-72635579 index=4
+2026-03-21T17:24:35.8740791Z   • download part   range=bytes=29054232-43581347 index=2
+2026-03-21T17:24:35.8742410Z   • download part   range=bytes=43581348-58108463 index=3
+2026-03-21T17:24:35.8743168Z   • download part   range=bytes=72635580-87162695 index=5
+2026-03-21T17:24:35.8743896Z   • download part   range=bytes=14527116-29054231 index=1
+2026-03-21T17:24:35.8744599Z   • download part   range=bytes=0-14527115 index=0
+2026-03-21T17:24:35.8745354Z   • download part   range=bytes=87162696-101689811 index=6
+2026-03-21T17:24:36.1467566Z   • downloaded      url=https://github.com/electron/electron/releases/download/v34.5.8/electron-v34.5.8-win32-x64.zip duration=397ms
+2026-03-21T17:24:36.1474791Z   • map async       taskCount=73
+2026-03-21T17:24:37.8854234Z   • exited          command=app-builder.exe code=0 pid=8760
+2026-03-21T17:24:37.9039324Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe node-dep-tree --dir D:\a\NullChat\NullChat --flatten
+2026-03-21T17:24:37.9216642Z   • exited          command=app-builder.exe code=0 pid=5536 out=[{"name":"@msgpack/msgpack","version":"2.8.0","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\@msgpack\\msgpack"},{"name":"eventemitter3","version":"4.0.7","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\eventemitter3"},{"name":"peerjs","version":"1.5.5","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\peerjs","conflictDependency":[{"name":"peerjs-js-binarypack","version":"2.1.0","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\peerjs-js-binarypack"}]},{"name":"sdp","version":"3.2.1","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\sdp"},{"name":"uuid","version":"13.0.0","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\uuid"},{"name":"webrtc-adapter","version":"9.0.3","dir":"D:\\a\\NullChat\\NullChat\\node_modules\\webrtc-adapter"}]
+2026-03-21T17:24:38.4724561Z   • updating asar integrity executable resource  executablePath=dist\win-unpacked\NullChat.exe
+2026-03-21T17:24:38.4731056Z   • detect github as publish provider
+2026-03-21T17:24:38.4736272Z   • calling getInfo  reason=owner or project is not specified explicitly provider=github owner=undefined project=undefined
+2026-03-21T17:24:38.4814323Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe icon --format ico --root D:\a\NullChat\NullChat\build --root D:\a\NullChat\NullChat --out D:\a\NullChat\NullChat\dist\.icon-ico --input assets/icon.ico
+2026-03-21T17:24:38.4959030Z   • path doesn't exist  path=D:\a\NullChat\NullChat\build\assets\icon.ico
+2026-03-21T17:24:38.4959696Z   • path resolved   path=D:\a\NullChat\NullChat\assets\icon.ico outputFormat=ico
+2026-03-21T17:24:38.4986873Z   • exited          command=app-builder.exe code=0 pid=9504 out={"icons":[{"file":"D:\\a\\NullChat\\NullChat\\assets\\icon.ico","size":256}],"isFallback":false}
+2026-03-21T17:24:38.5004967Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe rcedit --args ["D:\\a\\NullChat\\NullChat\\dist\\win-unpacked\\NullChat.exe","--set-version-string","FileDescription","Minimalistic P2P Chat & Voice App using Electron and PeerJS","--set-version-string","ProductName","NullChat","--set-version-string","LegalCopyright","Copyright © 2026 NullChat","--set-file-version","2.2.1","--set-product-version","2.2.1.0","--set-version-string","InternalName","NullChat","--set-version-string","OriginalFilename","","--set-icon","D:\\a\\NullChat\\NullChat\\assets\\icon.ico"]
+2026-03-21T17:24:38.7096073Z   • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z
+2026-03-21T17:24:38.7103079Z                              currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/f73f2200-5d53-11ea-8264-ddd345f11ee4?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-21T18%3A03%3A08Z&rscd=attachment%3B+filename%3DwinCodeSign-2.6.0.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-21T17%3A02%3A13Z&ske=2026-03-21T18%3A03%3A08Z&sks=b&skv=2018-11-09&sig=W5Yh6y%2Fxl7FjY9Dwth88dwvw97Li11gbB%2FyjML6mW4I%3D&jwt=***
+2026-03-21T17:24:38.7418349Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z length=5635384 contentType=application/octet-stream
+2026-03-21T17:24:38.7421243Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+2026-03-21T17:24:38.7422573Z   • map async       taskCount=1
+2026-03-21T17:24:38.7423121Z   • download part   range=bytes=0-5635383 index=0
+2026-03-21T17:24:38.8185716Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=302ms
+2026-03-21T17:24:38.8187581Z   • execute command  command='D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\388214015.7z' '-oC:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\388214015'
+2026-03-21T17:24:38.8189342Z                      workingDirectory=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign
+2026-03-21T17:24:39.1781225Z   • command executed  executable=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe
+2026-03-21T17:24:39.1781921Z                       out=
+2026-03-21T17:24:39.1782387Z     7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+2026-03-21T17:24:39.1782850Z     
+2026-03-21T17:24:39.1783088Z     Scanning the drive for archives:
+2026-03-21T17:24:39.1783530Z     1 file, 5635384 bytes (5504 KiB)
+2026-03-21T17:24:39.1783858Z     
+2026-03-21T17:24:39.1784507Z     Extracting archive: C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\388214015.7z
+2026-03-21T17:24:39.1785177Z     --
+2026-03-21T17:24:39.1785709Z     Path = C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\388214015.7z
+2026-03-21T17:24:39.1786366Z     Type = 7z
+2026-03-21T17:24:39.1786615Z     Physical Size = 5635384
+2026-03-21T17:24:39.1787306Z     Headers Size = 1492
+2026-03-21T17:24:39.1787694Z     Method = LZMA2:24m LZMA:20 BCJ2
+2026-03-21T17:24:39.1787991Z     Solid = +
+2026-03-21T17:24:39.1788151Z     Blocks = 2
+2026-03-21T17:24:39.1788308Z     
+2026-03-21T17:24:39.1788464Z     Everything is Ok
+2026-03-21T17:24:39.1788637Z     
+2026-03-21T17:24:39.1788792Z     Folders: 13
+2026-03-21T17:24:39.1789132Z     Files: 83
+2026-03-21T17:24:39.1789442Z     Size:       24762883
+2026-03-21T17:24:39.1789724Z     Compressed: 5635384
+2026-03-21T17:24:39.1789900Z     
+2026-03-21T17:24:39.1795240Z   • execute command  command='C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\winCodeSign-2.6.0\rcedit-x64.exe' 'D:\a\NullChat\NullChat\dist\win-unpacked\NullChat.exe' --set-version-string FileDescription 'Minimalistic P2P Chat & Voice App using Electron and PeerJS' --set-version-string ProductName NullChat --set-version-string LegalCopyright 'Copyright © 2026 NullChat' --set-file-version 2.2.1 --set-product-version 2.2.1.0 --set-version-string InternalName NullChat --set-version-string OriginalFilename '' --set-icon 'D:\a\NullChat\NullChat\assets\icon.ico'
+2026-03-21T17:24:39.1797562Z                      workingDirectory=
+2026-03-21T17:24:39.5257130Z   • command executed  executable=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\winCodeSign\winCodeSign-2.6.0\rcedit-x64.exe
+2026-03-21T17:24:39.5298097Z   • exited          command=app-builder.exe code=0 pid=2536
+2026-03-21T17:24:39.5302279Z   • signing with signtool.exe  path=dist\win-unpacked\NullChat.exe
+2026-03-21T17:24:39.5307923Z   • no signing info identified, signing is skipped  signHook=false cscInfo=null
+2026-03-21T17:24:39.5309184Z wine&sign: 1s 32ms
+2026-03-21T17:24:39.5330086Z   • building        target=nsis file=dist\NullChat-Setup-2.2.1.exe archs=x64 oneClick=false perMachine=false
+2026-03-21T17:24:39.5354659Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe download-artifact --name nsis-3.0.4.1 --url https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z --sha512 VKMiizYdmNdJOWpRGz4trl4lD++BvYP2irAXpMilheUP0pc93iKlWAoP843Vlraj8YG19CVn0j+dCo/hURz9+Q==
+2026-03-21T17:24:39.7448495Z   • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z
+2026-03-21T17:24:39.7456091Z                              currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/10518a80-10f6-11ea-8d2f-403bab81b4cd?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-21T18%3A09%3A59Z&rscd=attachment%3B+filename%3Dnsis-3.0.4.1.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-21T17%3A09%3A06Z&ske=2026-03-21T18%3A09%3A59Z&sks=b&skv=2018-11-09&sig=cZISfQcuIVW8zMdJYtXgMDC%2F3iMvX2%2B7q4YqMeB3Oxc%3D&jwt=***
+2026-03-21T17:24:39.7693561Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z length=1287512 contentType=application/octet-stream
+2026-03-21T17:24:39.7696258Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
+2026-03-21T17:24:39.7697382Z   • map async       taskCount=1
+2026-03-21T17:24:39.7697733Z   • download part   range=bytes=0-1287511 index=0
+2026-03-21T17:24:39.8231005Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=273ms
+2026-03-21T17:24:39.8233047Z   • execute command  command='D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\019144119.7z' '-oC:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\019144119'
+2026-03-21T17:24:39.8234415Z                      workingDirectory=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis
+2026-03-21T17:24:40.2222439Z   • command executed  executable=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe
+2026-03-21T17:24:40.2223319Z                       out=
+2026-03-21T17:24:40.2223829Z     7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+2026-03-21T17:24:40.2224340Z     
+2026-03-21T17:24:40.2224608Z     Scanning the drive for archives:
+2026-03-21T17:24:40.2225019Z     1 file, 1287512 bytes (1258 KiB)
+2026-03-21T17:24:40.2225379Z     
+2026-03-21T17:24:40.2226014Z     Extracting archive: C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\019144119.7z
+2026-03-21T17:24:40.2226471Z     --
+2026-03-21T17:24:40.2226831Z     Path = C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\019144119.7z
+2026-03-21T17:24:40.2227233Z     Type = 7z
+2026-03-21T17:24:40.2227411Z     Physical Size = 1287512
+2026-03-21T17:24:40.2227616Z     Headers Size = 4285
+2026-03-21T17:24:40.2227854Z     Method = LZMA2:23 LZMA:20 BCJ2
+2026-03-21T17:24:40.2228064Z     Solid = +
+2026-03-21T17:24:40.2228229Z     Blocks = 2
+2026-03-21T17:24:40.2228385Z     
+2026-03-21T17:24:40.2228527Z     Everything is Ok
+2026-03-21T17:24:40.2228699Z     
+2026-03-21T17:24:40.2228833Z     Folders: 23
+2026-03-21T17:24:40.2228993Z     Files: 343
+2026-03-21T17:24:40.2229155Z     Size:       7280179
+2026-03-21T17:24:40.2229334Z     Compressed: 1287512
+2026-03-21T17:24:40.2229508Z     
+2026-03-21T17:24:40.2274103Z   • exited          command=app-builder.exe code=0 pid=3548 out=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-3.0.4.1
+2026-03-21T17:24:40.2290859Z   • signing with signtool.exe  path=dist\win-unpacked\resources\elevate.exe
+2026-03-21T17:24:40.2291933Z   • no signing info identified, signing is skipped  signHook=false cscInfo=null
+2026-03-21T17:24:40.2308038Z   • executing       file=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe args=a -bd -mx=9 -md=1m -mtc=off -ms=off -mtm=off -mta=off D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z . -xr!*.avi -xr!*.mov -xr!*.m4v -xr!*.mp4 -xr!*.m4p -xr!*.qt -xr!*.mkv -xr!*.webm -xr!*.vmdk cwd=D:\a\NullChat\NullChat\dist\win-unpacked
+2026-03-21T17:25:07.0081534Z nsis package, x64: 26s 778ms
+2026-03-21T17:25:07.2067181Z   • executing       file=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe args=l D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z
+2026-03-21T17:25:07.2205198Z   • executed        file=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe stdout=
+2026-03-21T17:25:07.2205826Z 7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+2026-03-21T17:25:07.2206217Z                       Scanning the drive for archives:
+2026-03-21T17:25:07.2206529Z 1 file, 88028039 bytes (84 MiB)
+2026-03-21T17:25:07.2206912Z                       Listing archive: D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z
+2026-03-21T17:25:07.2207270Z                       --
+2026-03-21T17:25:07.2207619Z Path = D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z
+2026-03-21T17:25:07.2207923Z Type = 7z
+2026-03-21T17:25:07.2208091Z Physical Size = 88028039
+2026-03-21T17:25:07.2208293Z Headers Size = 1459
+2026-03-21T17:25:07.2208503Z Method = LZMA2:20 LZMA:20 BCJ2
+2026-03-21T17:25:07.2208735Z Solid = -
+2026-03-21T17:25:07.2208883Z Blocks = 74
+2026-03-21T17:25:07.2209143Z                          Date      Time    Attr         Size   Compressed  Name
+2026-03-21T17:25:07.2209585Z ------------------- ----- ------------ ------------  ------------------------
+2026-03-21T17:25:07.2209948Z                     D....            0            0  locales
+2026-03-21T17:25:07.2210243Z                     D....            0            0  resources
+2026-03-21T17:25:07.2210580Z                     ....A       147398       136844  chrome_100_percent.pak
+2026-03-21T17:25:07.2210942Z                     ....A       219772       205563  chrome_200_percent.pak
+2026-03-21T17:25:07.2211562Z                     ....A     10464144      3447515  icudtl.dat
+2026-03-21T17:25:07.2212688Z                     ....A         1096          690  LICENSE.electron.txt
+2026-03-21T17:25:07.2213103Z                     ....A     11175275       286458  LICENSES.chromium.html
+2026-03-21T17:25:07.2213464Z                     ....A       545943       132390  locales\af.pak
+2026-03-21T17:25:07.2213782Z                     ....A       882232       149397  locales\am.pak
+2026-03-21T17:25:07.2214082Z                     ....A       967938       153175  locales\ar.pak
+2026-03-21T17:25:07.2214388Z                     ....A      1007566       148538  locales\bg.pak
+2026-03-21T17:25:07.2214690Z                     ....A      1298436       154922  locales\bn.pak
+2026-03-21T17:25:07.2214986Z                     ....A       612676       135566  locales\ca.pak
+2026-03-21T17:25:07.2215289Z                     ....A       632449       146110  locales\cs.pak
+2026-03-21T17:25:07.2215592Z                     ....A       571795       132708  locales\da.pak
+2026-03-21T17:25:07.2215906Z                     ....A       611312       140188  locales\de.pak
+2026-03-21T17:25:07.2216207Z                     ....A      1103668       156711  locales\el.pak
+2026-03-21T17:25:07.2216528Z                     ....A       496743       122522  locales\en-GB.pak
+2026-03-21T17:25:07.2216849Z                     ....A       501514       122826  locales\en-US.pak
+2026-03-21T17:25:07.2217202Z                     ....A       603446       135102  locales\es-419.pak
+2026-03-21T17:25:07.2217519Z                     ....A       602486       134520  locales\es.pak
+2026-03-21T17:25:07.2217813Z                     ....A       549196       136384  locales\et.pak
+2026-03-21T17:25:07.2218121Z                     ....A       898401       144515  locales\fa.pak
+2026-03-21T17:25:07.2218425Z                     ....A       560067       135683  locales\fi.pak
+2026-03-21T17:25:07.2218728Z                     ....A       633637       135191  locales\fil.pak
+2026-03-21T17:25:07.2219040Z                     ....A       652577       140053  locales\fr.pak
+2026-03-21T17:25:07.2219351Z                     ....A      1281645       153891  locales\gu.pak
+2026-03-21T17:25:07.2219647Z                     ....A       789701       141795  locales\he.pak
+2026-03-21T17:25:07.2219952Z                     ....A      1352368       158950  locales\hi.pak
+2026-03-21T17:25:07.2220250Z                     ....A       609487       141355  locales\hr.pak
+2026-03-21T17:25:07.2220543Z                     ....A       656971       147964  locales\hu.pak
+2026-03-21T17:25:07.2220842Z                     ....A       541718       123060  locales\id.pak
+2026-03-21T17:25:07.2221142Z                     ....A       594394       133541  locales\it.pak
+2026-03-21T17:25:07.2221433Z                     ....A       724187       129065  locales\ja.pak
+2026-03-21T17:25:07.2221733Z                     ....A      1463263       156251  locales\kn.pak
+2026-03-21T17:25:07.2222031Z                     ....A       613609       125551  locales\ko.pak
+2026-03-21T17:25:07.2222329Z                     ....A       660230       144126  locales\lt.pak
+2026-03-21T17:25:07.2222625Z                     ....A       658780       145099  locales\lv.pak
+2026-03-21T17:25:07.2223433Z                     ....A      1519586       159753  locales\ml.pak
+2026-03-21T17:25:07.2223777Z                     ....A      1254664       150630  locales\mr.pak
+2026-03-21T17:25:07.2224091Z                     ....A       568567       125295  locales\ms.pak
+2026-03-21T17:25:07.2224398Z                     ....A       550039       129793  locales\nb.pak
+2026-03-21T17:25:07.2224692Z                     ....A       569717       133077  locales\nl.pak
+2026-03-21T17:25:07.2224995Z                     ....A       634327       146570  locales\pl.pak
+2026-03-21T17:25:07.2225322Z                     ....A       595165       134839  locales\pt-BR.pak
+2026-03-21T17:25:07.2225658Z                     ....A       599243       133579  locales\pt-PT.pak
+2026-03-21T17:25:07.2226644Z                     ....A       620746       137593  locales\ro.pak
+2026-03-21T17:25:07.2227060Z                     ....A      1021508       155850  locales\ru.pak
+2026-03-21T17:25:07.2227421Z                     ....A       642856       149042  locales\sk.pak
+2026-03-21T17:25:07.2227740Z                     ....A       616550       141480  locales\sl.pak
+2026-03-21T17:25:07.2228046Z                     ....A       949158       148894  locales\sr.pak
+2026-03-21T17:25:07.2229407Z                     ....A       553636       129799  locales\sv.pak
+2026-03-21T17:25:07.2229979Z                     ....A       584260       133305  locales\sw.pak
+2026-03-21T17:25:07.2230486Z                     ....A      1507096       155334  locales\ta.pak
+2026-03-21T17:25:07.2230974Z                     ....A      1395141       155875  locales\te.pak
+2026-03-21T17:25:07.2231482Z                     ....A      1172114       136234  locales\th.pak
+2026-03-21T17:25:07.2232012Z                     ....A       595104       134545  locales\tr.pak
+2026-03-21T17:25:07.2232532Z                     ....A      1023402       154232  locales\uk.pak
+2026-03-21T17:25:07.2233065Z                     ....A       893135       145109  locales\ur.pak
+2026-03-21T17:25:07.2233610Z                     ....A       705694       134161  locales\vi.pak
+2026-03-21T17:25:07.2234152Z                     ....A       507439       124884  locales\zh-CN.pak
+2026-03-21T17:25:07.2234771Z                     ....A       501984       123189  locales\zh-TW.pak
+2026-03-21T17:25:07.2235139Z                     ....A           88           88  resources\app-update.yml
+2026-03-21T17:25:07.2235507Z                     ....A     10912802      6115634  resources\app.asar
+2026-03-21T17:25:07.2235854Z                     ....A      5801405      5749720  resources.pak
+2026-03-21T17:25:07.2236180Z                     ....A       320614        56342  snapshot_blob.bin
+2026-03-21T17:25:07.2236510Z                     ....A       693457       121984  v8_context_snapshot.bin
+2026-03-21T17:25:07.2236878Z                     ....A          106           96  vk_swiftshader_icd.json
+2026-03-21T17:25:07.2237224Z                     ....A      4916728      1561984  d3dcompiler_47.dll
+2026-03-21T17:25:07.2237552Z                     ....A      2976768       923772  ffmpeg.dll
+2026-03-21T17:25:07.2237867Z                     ....A       491008       170422  libEGL.dll
+2026-03-21T17:25:07.2238178Z                     ....A      8110592      2217236  libGLESv2.dll
+2026-03-21T17:25:07.2238508Z                     ....A    190645760     57690671  NullChat.exe
+2026-03-21T17:25:07.2238838Z                     ....A       107520        49095  resources\elevate.exe
+2026-03-21T17:25:07.2239175Z                     ....A      5506560      1303493  vk_swiftshader.dll
+2026-03-21T17:25:07.2239520Z                     ....A       897536       258762  vulkan-1.dll
+2026-03-21T17:25:07.2239915Z ------------------- ----- ------------ ------------  ------------------------
+2026-03-21T17:25:07.2240302Z                              296648195     88026580  74 files, 2 folders
+2026-03-21T17:25:07.2240529Z 
+2026-03-21T17:25:07.2242309Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe download-artifact --name nsis-resources-3.4.1 --url https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z --sha512 Dqd6g+2buwwvoG1Vyf6BHR1b+25QMmPcwZx40atOT57gH27rkjOei1L0JTldxZu4NFoEmW4kJgZ3DlSWVON3+Q==
+2026-03-21T17:25:07.4452710Z   • computing effective URL  initialUrl=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z
+2026-03-21T17:25:07.4462883Z                              currentUrl=https://release-assets.githubusercontent.com/github-production-release-asset/65527128/64ac4a00-a87a-11e9-901b-f221c4fd0776?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-03-21T18%3A11%3A26Z&rscd=attachment%3B+filename%3Dnsis-resources-3.4.1.7z&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-03-21T17%3A11%3A11Z&ske=2026-03-21T18%3A11%3A26Z&sks=b&skv=2018-11-09&sig=MFOchwPcMnp%2FmbvxzUXWwbE91zBql1pOwAgR6P01rZE%3D&jwt=***
+2026-03-21T17:25:07.4698664Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z length=730800 contentType=application/octet-stream
+2026-03-21T17:25:07.4701404Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
+2026-03-21T17:25:07.4702861Z   • map async       taskCount=1
+2026-03-21T17:25:07.4703478Z   • download part   range=bytes=0-730799 index=0
+2026-03-21T17:25:07.5158715Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=273ms
+2026-03-21T17:25:07.5162090Z   • execute command  command='D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\190784847.7z' '-oC:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\190784847'
+2026-03-21T17:25:07.5164409Z                      workingDirectory=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis
+2026-03-21T17:25:07.6031686Z   • command executed  executable=D:\a\NullChat\NullChat\node_modules\7zip-bin\win\x64\7za.exe
+2026-03-21T17:25:07.6032379Z                       out=
+2026-03-21T17:25:07.6032744Z     7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+2026-03-21T17:25:07.6033079Z     
+2026-03-21T17:25:07.6033268Z     Scanning the drive for archives:
+2026-03-21T17:25:07.6033531Z     1 file, 730800 bytes (714 KiB)
+2026-03-21T17:25:07.6033741Z     
+2026-03-21T17:25:07.6034143Z     Extracting archive: C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\190784847.7z
+2026-03-21T17:25:07.6034614Z     --
+2026-03-21T17:25:07.6035664Z     Path = C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\190784847.7z
+2026-03-21T17:25:07.6036622Z     Type = 7z
+2026-03-21T17:25:07.6036937Z     Physical Size = 730800
+2026-03-21T17:25:07.6037297Z     Headers Size = 650
+2026-03-21T17:25:07.6037667Z     Method = LZMA2:3m LZMA:20 BCJ2
+2026-03-21T17:25:07.6038060Z     Solid = +
+2026-03-21T17:25:07.6038323Z     Blocks = 2
+2026-03-21T17:25:07.6038582Z     
+2026-03-21T17:25:07.6038834Z     Everything is Ok
+2026-03-21T17:25:07.6039122Z     
+2026-03-21T17:25:07.6039363Z     Folders: 5
+2026-03-21T17:25:07.6039612Z     Files: 22
+2026-03-21T17:25:07.6039879Z     Size:       2998788
+2026-03-21T17:25:07.6040181Z     Compressed: 730800
+2026-03-21T17:25:07.6040454Z     
+2026-03-21T17:25:07.6083616Z   • exited          command=app-builder.exe code=0 pid=3068 out=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-resources-3.4.1
+2026-03-21T17:25:07.6126217Z   • spawning        command=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-3.0.4.1\Bin\makensis.exe -WX -INPUTCHARSET UTF8 -DAPP_ID=com.nullchat.app -DAPP_GUID=5453ef65-e9f2-5d3e-9f11-c3d766089e1b -DUNINSTALL_APP_KEY=5453ef65-e9f2-5d3e-9f11-c3d766089e1b -DPRODUCT_NAME=NullChat -DPRODUCT_FILENAME=NullChat -DAPP_FILENAME=NullChat -DAPP_DESCRIPTION=Minimalistic P2P Chat & Voice App using Electron and PeerJS -DVERSION=2.2.1 -DPROJECT_DIR=D:\a\NullChat\NullChat -DBUILD_RESOURCES_DIR=D:\a\NullChat\NullChat\build -DAPP_PACKAGE_NAME=nullchat -DMUI_ICON=D:\a\NullChat\NullChat\assets\icon.ico -DMUI_UNICON=D:\a\NullChat\NullChat\assets\icon.ico -DAPP_64=D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z -DAPP_64_NAME=nullchat-2.2.1-x64.nsis.7z -DAPP_64_HASH=D7BC8FDEB89988E6FF12BA24CC4EAF1828CFF031DD1E20511B9F55D79A981FDBC3658DC1D0B283A39CFA6C30227BD094C29B02D7805D23E6CB8F11DFA491D5A5 -DAPP_64_UNPACKED_SIZE=289696 -DAPP_INSTALLER_STORE_FILE=nullchat-updater\installer.exe -DCOMPRESSION_METHOD=7z -DMULTIUSER_INSTALLMODE_ALLOW_ELEVATION -DINSTALL_MODE_PER_ALL_USERS_REQUIRED -DallowToChangeInstallationDirectory -DSHORTCUT_NAME=NullChat -DUNINSTALL_DISPLAY_NAME=NullChat Messenger -DMUI_WELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp -DMUI_UNWELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp -DESTIMATED_SIZE=289696 -DCOMPRESS=auto -DBUILD_UNINSTALLER -DUNINSTALLER_OUT_FILE=D:\a\NullChat\NullChat\dist\__uninstaller-nsis-nullchat.exe -XOutFile "D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe" -XVIProductVersion 2.2.1.0 -XVIAddVersionKey /LANG=1033 ProductName "NullChat" -XVIAddVersionKey /LANG=1033 ProductVersion "2.2.1" -XVIAddVersionKey /LANG=1033 LegalCopyright "Copyright © 2026 NullChat" -XVIAddVersionKey /LANG=1033 FileDescription "Minimalistic P2P Chat & Voice App using Electron and PeerJS" -XVIAddVersionKey /LANG=1033 FileVersion "2.2.1" -XUnicode true -XSetCompressor zlib - cwd=D:\a\NullChat\NullChat\node_modules\app-builder-lib\templates\nsis
+2026-03-21T17:25:07.6960876Z Command line defined: "APP_ID=com.nullchat.app"
+2026-03-21T17:25:07.6962424Z Command line defined: "APP_GUID=5453ef65-e9f2-5d3e-9f11-c3d766089e1b"
+2026-03-21T17:25:07.6963086Z Command line defined: "UNINSTALL_APP_KEY=5453ef65-e9f2-5d3e-9f11-c3d766089e1b"
+2026-03-21T17:25:07.6963541Z Command line defined: "PRODUCT_NAME=NullChat"
+2026-03-21T17:25:07.6963903Z Command line defined: "PRODUCT_FILENAME=NullChat"
+2026-03-21T17:25:07.6964265Z Command line defined: "APP_FILENAME=NullChat"
+2026-03-21T17:25:07.6964846Z Command line defined: "APP_DESCRIPTION=Minimalistic P2P Chat & Voice App using Electron and PeerJS"
+2026-03-21T17:25:07.6965370Z Command line defined: "VERSION=2.2.1"
+2026-03-21T17:25:07.6965740Z Command line defined: "PROJECT_DIR=D:\a\NullChat\NullChat"
+2026-03-21T17:25:07.6966220Z Command line defined: "BUILD_RESOURCES_DIR=D:\a\NullChat\NullChat\build"
+2026-03-21T17:25:07.6966666Z Command line defined: "APP_PACKAGE_NAME=nullchat"
+2026-03-21T17:25:07.6967134Z Command line defined: "MUI_ICON=D:\a\NullChat\NullChat\assets\icon.ico"
+2026-03-21T17:25:07.6967667Z Command line defined: "MUI_UNICON=D:\a\NullChat\NullChat\assets\icon.ico"
+2026-03-21T17:25:07.6968243Z Command line defined: "APP_64=D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z"
+2026-03-21T17:25:07.6968772Z Command line defined: "APP_64_NAME=nullchat-2.2.1-x64.nsis.7z"
+2026-03-21T17:25:07.6969781Z Command line defined: "APP_64_HASH=D7BC8FDEB89988E6FF12BA24CC4EAF1828CFF031DD1E20511B9F55D79A981FDBC3658DC1D0B283A39CFA6C30227BD094C29B02D7805D23E6CB8F11DFA491D5A5"
+2026-03-21T17:25:07.6970649Z Command line defined: "APP_64_UNPACKED_SIZE=289696"
+2026-03-21T17:25:07.6971138Z Command line defined: "APP_INSTALLER_STORE_FILE=nullchat-updater\installer.exe"
+2026-03-21T17:25:07.6971583Z Command line defined: "COMPRESSION_METHOD=7z"
+2026-03-21T17:25:07.6971957Z Command line defined: "MULTIUSER_INSTALLMODE_ALLOW_ELEVATION"
+2026-03-21T17:25:07.6972368Z Command line defined: "INSTALL_MODE_PER_ALL_USERS_REQUIRED"
+2026-03-21T17:25:07.6972779Z Command line defined: "allowToChangeInstallationDirectory"
+2026-03-21T17:25:07.6973140Z Command line defined: "SHORTCUT_NAME=NullChat"
+2026-03-21T17:25:07.6973515Z Command line defined: "UNINSTALL_DISPLAY_NAME=NullChat Messenger"
+2026-03-21T17:25:07.6974114Z Command line defined: "MUI_WELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
+2026-03-21T17:25:07.6974845Z Command line defined: "MUI_UNWELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
+2026-03-21T17:25:07.6975368Z Command line defined: "ESTIMATED_SIZE=289696"
+2026-03-21T17:25:07.6975658Z Command line defined: "COMPRESS=auto"
+2026-03-21T17:25:07.6975936Z Command line defined: "BUILD_UNINSTALLER"
+2026-03-21T17:25:07.6976466Z Command line defined: "UNINSTALLER_OUT_FILE=D:\a\NullChat\NullChat\dist\__uninstaller-nsis-nullchat.exe"
+2026-03-21T17:25:07.6991320Z Processing config: C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-3.0.4.1\nsisconf.nsh
+2026-03-21T17:25:07.7125123Z Processing script file: "<stdin>" (UTF8)
+2026-03-21T17:25:08.3691010Z 
+2026-03-21T17:25:08.3691863Z Processed 1 file, 9 command line commands, writing output (x86-unicode):
+2026-03-21T17:25:08.4463296Z 
+2026-03-21T17:25:08.4463853Z Output: "D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe"
+2026-03-21T17:25:08.4545549Z Install: 0 pages (0 bytes), 1 section (16408 bytes), 31 instructions (868 bytes), 2926 strings (23928 bytes), 26 language tables (4316 bytes).
+2026-03-21T17:25:08.4547149Z Uninstall: 4 pages (320 bytes), 1 section (16408 bytes), 1797 instructions (50316 bytes), 8494 strings (108802 bytes), 26 language tables (8684 bytes).
+2026-03-21T17:25:08.4547937Z 
+2026-03-21T17:25:08.4548066Z Using zlib compression.
+2026-03-21T17:25:08.4548256Z 
+2026-03-21T17:25:08.4548468Z EXE header size:              133632 / 39424 bytes
+2026-03-21T17:25:08.4548944Z Install code:                   9774 / 45920 bytes
+2026-03-21T17:25:08.4549414Z Install data:                      0 / 8 bytes
+2026-03-21T17:25:08.4549890Z Uninstall code+data:          201104 / 202149 bytes
+2026-03-21T17:25:08.4553353Z CRC (0x11A7D2D5):                  4 / 4 bytes
+2026-03-21T17:25:08.4553834Z 
+2026-03-21T17:25:08.4554882Z Total size:                   344514 / 287505 bytes (119.8%)
+2026-03-21T17:25:08.4668148Z   • exited          command=makensis.exe code=0 pid=5840
+2026-03-21T17:25:08.4680507Z   • executing       file=D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe args= env={
+2026-03-21T17:25:08.4681167Z   "__COMPAT_LAYER": "RunAsInvoker"
+2026-03-21T17:25:08.4681525Z }
+2026-03-21T17:25:08.8274356Z   • executed        file=D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe
+2026-03-21T17:25:08.8276070Z   • signing with signtool.exe  path=dist\__uninstaller-nsis-nullchat.exe
+2026-03-21T17:25:08.8279068Z   • no signing info identified, signing is skipped  signHook=false cscInfo=null
+2026-03-21T17:25:08.8310958Z   • spawning        command=C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-3.0.4.1\Bin\makensis.exe -WX -INPUTCHARSET UTF8 -DAPP_ID=com.nullchat.app -DAPP_GUID=5453ef65-e9f2-5d3e-9f11-c3d766089e1b -DUNINSTALL_APP_KEY=5453ef65-e9f2-5d3e-9f11-c3d766089e1b -DPRODUCT_NAME=NullChat -DPRODUCT_FILENAME=NullChat -DAPP_FILENAME=NullChat -DAPP_DESCRIPTION=Minimalistic P2P Chat & Voice App using Electron and PeerJS -DVERSION=2.2.1 -DPROJECT_DIR=D:\a\NullChat\NullChat -DBUILD_RESOURCES_DIR=D:\a\NullChat\NullChat\build -DAPP_PACKAGE_NAME=nullchat -DMUI_ICON=D:\a\NullChat\NullChat\assets\icon.ico -DMUI_UNICON=D:\a\NullChat\NullChat\assets\icon.ico -DAPP_64=D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z -DAPP_64_NAME=nullchat-2.2.1-x64.nsis.7z -DAPP_64_HASH=D7BC8FDEB89988E6FF12BA24CC4EAF1828CFF031DD1E20511B9F55D79A981FDBC3658DC1D0B283A39CFA6C30227BD094C29B02D7805D23E6CB8F11DFA491D5A5 -DAPP_64_UNPACKED_SIZE=289696 -DAPP_INSTALLER_STORE_FILE=nullchat-updater\installer.exe -DCOMPRESSION_METHOD=7z -DMULTIUSER_INSTALLMODE_ALLOW_ELEVATION -DINSTALL_MODE_PER_ALL_USERS_REQUIRED -DallowToChangeInstallationDirectory -DSHORTCUT_NAME=NullChat -DUNINSTALL_DISPLAY_NAME=NullChat Messenger -DMUI_WELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp -DMUI_UNWELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp -DESTIMATED_SIZE=289696 -DCOMPRESS=auto -DUNINSTALLER_OUT_FILE=D:\a\NullChat\NullChat\dist\__uninstaller-nsis-nullchat.exe -XOutFile "D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe" -XVIProductVersion 2.2.1.0 -XVIAddVersionKey /LANG=1033 ProductName "NullChat" -XVIAddVersionKey /LANG=1033 ProductVersion "2.2.1" -XVIAddVersionKey /LANG=1033 LegalCopyright "Copyright © 2026 NullChat" -XVIAddVersionKey /LANG=1033 FileDescription "Minimalistic P2P Chat & Voice App using Electron and PeerJS" -XVIAddVersionKey /LANG=1033 FileVersion "2.2.1" -XUnicode true -XSetCompressor zlib - cwd=D:\a\NullChat\NullChat\node_modules\app-builder-lib\templates\nsis
+2026-03-21T17:25:08.8425174Z Command line defined: "APP_ID=com.nullchat.app"
+2026-03-21T17:25:08.8426494Z Command line defined: "APP_GUID=5453ef65-e9f2-5d3e-9f11-c3d766089e1b"
+2026-03-21T17:25:08.8427388Z Command line defined: "UNINSTALL_APP_KEY=5453ef65-e9f2-5d3e-9f11-c3d766089e1b"
+2026-03-21T17:25:08.8428132Z Command line defined: "PRODUCT_NAME=NullChat"
+2026-03-21T17:25:08.8428828Z Command line defined: "PRODUCT_FILENAME=NullChat"
+2026-03-21T17:25:08.8429394Z Command line defined: "APP_FILENAME=NullChat"
+2026-03-21T17:25:08.8430296Z Command line defined: "APP_DESCRIPTION=Minimalistic P2P Chat & Voice App using Electron and PeerJS"
+2026-03-21T17:25:08.8431080Z Command line defined: "VERSION=2.2.1"
+2026-03-21T17:25:08.8431660Z Command line defined: "PROJECT_DIR=D:\a\NullChat\NullChat"
+2026-03-21T17:25:08.8432219Z Command line defined: "BUILD_RESOURCES_DIR=D:\a\NullChat\NullChat\build"
+2026-03-21T17:25:08.8432658Z Command line defined: "APP_PACKAGE_NAME=nullchat"
+2026-03-21T17:25:08.8433103Z Command line defined: "MUI_ICON=D:\a\NullChat\NullChat\assets\icon.ico"
+2026-03-21T17:25:08.8433615Z Command line defined: "MUI_UNICON=D:\a\NullChat\NullChat\assets\icon.ico"
+2026-03-21T17:25:08.8434145Z Command line defined: "APP_64=D:\a\NullChat\NullChat\dist\nullchat-2.2.1-x64.nsis.7z"
+2026-03-21T17:25:08.8434636Z Command line defined: "APP_64_NAME=nullchat-2.2.1-x64.nsis.7z"
+2026-03-21T17:25:08.8435538Z Command line defined: "APP_64_HASH=D7BC8FDEB89988E6FF12BA24CC4EAF1828CFF031DD1E20511B9F55D79A981FDBC3658DC1D0B283A39CFA6C30227BD094C29B02D7805D23E6CB8F11DFA491D5A5"
+2026-03-21T17:25:08.8436603Z Command line defined: "APP_64_UNPACKED_SIZE=289696"
+2026-03-21T17:25:08.8437060Z Command line defined: "APP_INSTALLER_STORE_FILE=nullchat-updater\installer.exe"
+2026-03-21T17:25:08.8437694Z Command line defined: "COMPRESSION_METHOD=7z"
+2026-03-21T17:25:08.8438063Z Command line defined: "MULTIUSER_INSTALLMODE_ALLOW_ELEVATION"
+2026-03-21T17:25:08.8438472Z Command line defined: "INSTALL_MODE_PER_ALL_USERS_REQUIRED"
+2026-03-21T17:25:08.8438881Z Command line defined: "allowToChangeInstallationDirectory"
+2026-03-21T17:25:08.8439254Z Command line defined: "SHORTCUT_NAME=NullChat"
+2026-03-21T17:25:08.8439635Z Command line defined: "UNINSTALL_DISPLAY_NAME=NullChat Messenger"
+2026-03-21T17:25:08.8440243Z Command line defined: "MUI_WELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
+2026-03-21T17:25:08.8440977Z Command line defined: "MUI_UNWELCOMEFINISHPAGE_BITMAP=${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
+2026-03-21T17:25:08.8441496Z Command line defined: "ESTIMATED_SIZE=289696"
+2026-03-21T17:25:08.8441791Z Command line defined: "COMPRESS=auto"
+2026-03-21T17:25:08.8442304Z Command line defined: "UNINSTALLER_OUT_FILE=D:\a\NullChat\NullChat\dist\__uninstaller-nsis-nullchat.exe"
+2026-03-21T17:25:08.8452824Z Processing config: C:\Users\runneradmin\AppData\Local\electron-builder\Cache\nsis\nsis-3.0.4.1\nsisconf.nsh
+2026-03-21T17:25:08.8465021Z Processing script file: "<stdin>" (UTF8)
+2026-03-21T17:25:09.6908649Z 
+2026-03-21T17:25:09.6909418Z Processed 1 file, 9 command line commands, writing output (x86-unicode):
+2026-03-21T17:25:09.7328924Z 
+2026-03-21T17:25:09.7329726Z Output: "D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe"
+2026-03-21T17:25:09.7851097Z Install: 4 pages (256 bytes), 1 section (16408 bytes), 2001 instructions (56028 bytes), 10195 strings (121970 bytes), 26 language tables (9308 bytes).
+2026-03-21T17:25:09.7851778Z 
+2026-03-21T17:25:09.7851911Z Using zlib compression.
+2026-03-21T17:25:09.7852073Z 
+2026-03-21T17:25:09.7852286Z EXE header size:              135680 / 39424 bytes
+2026-03-21T17:25:09.7852686Z Install code:                  46988 / 204434 bytes
+2026-03-21T17:25:09.7853094Z Install data:               88567825 / 89011719 bytes
+2026-03-21T17:25:10.1168663Z CRC (0x96A82987):                  4 / 4 bytes
+2026-03-21T17:25:10.1169097Z 
+2026-03-21T17:25:10.1169314Z Total size:                 88750497 / 89255581 bytes (99.4%)
+2026-03-21T17:25:10.1208736Z   • exited          command=makensis.exe code=0 pid=7688
+2026-03-21T17:25:10.1211686Z   • signing with signtool.exe  path=dist\NullChat-Setup-2.2.1.exe
+2026-03-21T17:25:10.1214548Z   • no signing info identified, signing is skipped  signHook=false cscInfo=null
+2026-03-21T17:25:10.1219091Z   • building block map  blockMapFile=dist\NullChat-Setup-2.2.1.exe.blockmap
+2026-03-21T17:25:10.1229842Z   • spawning        command=D:\a\NullChat\NullChat\node_modules\app-builder-bin\win\x64\app-builder.exe blockmap --input D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe --output D:\a\NullChat\NullChat\dist\NullChat-Setup-2.2.1.exe.blockmap
+2026-03-21T17:25:10.8079994Z   • exited          command=app-builder.exe code=0 pid=9904 out={"size":88750497,"sha512":"D8TczEwuOIART5woOxlpS4/5ERSqF1ebWyFCA7Vjvq7QsaxkBC/wSMAkyGgm2Rh5pcvut5oH6jYxOgCZUqAfNw=="}
+2026-03-21T17:25:10.8083334Z   • detect github as publish provider
+2026-03-21T17:25:10.8085180Z   • calling getInfo  reason=owner or project is not specified explicitly provider=github owner=undefined project=undefined
+2026-03-21T17:25:10.8086909Z   • detect github as publish provider
+2026-03-21T17:25:10.8087871Z   • calling getInfo  reason=owner or project is not specified explicitly provider=github owner=undefined project=undefined
+2026-03-21T17:25:10.8094329Z   • publishing      publisher=Github (owner: xDerApfelx, project: NullChat, version: 2.2.1)
+2026-03-21T17:25:10.8131176Z   • uploading       file=NullChat-Setup-2.2.1.exe.blockmap provider=github
+2026-03-21T17:25:10.8147868Z 2026-03-21T17:25:10.814Z electron-builder Request: {
+2026-03-21T17:25:10.8148365Z   "protocol": "https:",
+2026-03-21T17:25:10.8148715Z   "hostname": "api.github.com",
+2026-03-21T17:25:10.8149045Z   "port": null,
+2026-03-21T17:25:10.8149393Z   "path": "/repos/xDerApfelx/NullChat/releases",
+2026-03-21T17:25:10.8149797Z   "headers": {
+2026-03-21T17:25:10.8150130Z     "accept": "application/vnd.github.v3+json",
+2026-03-21T17:25:10.8150637Z     "authorization": "<stripped sensitive data>",
+2026-03-21T17:25:10.8151126Z     "User-Agent": "electron-builder",
+2026-03-21T17:25:10.8151522Z     "Cache-Control": "no-cache"
+2026-03-21T17:25:10.8151849Z   }
+2026-03-21T17:25:10.8152059Z }
+2026-03-21T17:25:10.8411294Z   • uploading       file=NullChat-Setup-2.2.1.exe provider=github
+2026-03-21T17:25:11.0893246Z 2026-03-21T17:25:11.088Z electron-builder Response: 200 OK, request options: {
+2026-03-21T17:25:11.0893785Z   "protocol": "https:",
+2026-03-21T17:25:11.0894034Z   "hostname": "api.github.com",
+2026-03-21T17:25:11.0894268Z   "port": null,
+2026-03-21T17:25:11.0894544Z   "path": "/repos/xDerApfelx/NullChat/releases",
+2026-03-21T17:25:11.0894830Z   "headers": {
+2026-03-21T17:25:11.0895073Z     "accept": "application/vnd.github.v3+json",
+2026-03-21T17:25:11.0895415Z     "authorization": "<stripped sensitive data>",
+2026-03-21T17:25:11.0895736Z     "User-Agent": "electron-builder",
+2026-03-21T17:25:11.0896016Z     "Cache-Control": "no-cache"
+2026-03-21T17:25:11.0896230Z   }
+2026-03-21T17:25:11.0896415Z }
+2026-03-21T17:25:11.0981318Z   • GitHub release not created  reason=existing type not compatible with publishing type tag=v2.2.1 version=2.2.1 existingType=release publishingType=draft
+2026-03-21T17:25:11.0982780Z   • skipped publishing  file=NullChat-Setup-2.2.1.exe.blockmap reason=existing type not compatible with publishing type tag=v2.2.1 version=2.2.1 existingType=release publishingType=draft
+2026-03-21T17:25:11.0984272Z   • skipped publishing  file=NullChat-Setup-2.2.1.exe reason=existing type not compatible with publishing type tag=v2.2.1 version=2.2.1 existingType=release publishingType=draft
+2026-03-21T17:25:11.0995092Z   • skipped publishing  file=latest.yml reason=existing type not compatible with publishing type tag=v2.2.1 version=2.2.1 existingType=release publishingType=draft
+2026-03-21T17:25:11.1988530Z ##[group]Run softprops/action-gh-release@v2
+2026-03-21T17:25:11.1988863Z with:
+2026-03-21T17:25:11.1989131Z   files: dist/*.exe
+dist/*.dmg
+dist/*.zip
+dist/*.AppImage
+dist/*.deb
+
+2026-03-21T17:25:11.1989680Z   overwrite_files: true
+2026-03-21T17:25:11.1989990Z   token: ***
+2026-03-21T17:25:11.1990156Z ##[endgroup]
+2026-03-21T17:25:11.3450913Z 🤔 Pattern 'dist/*.dmg' does not match any files.
+2026-03-21T17:25:11.3459693Z 🤔 Pattern 'dist/*.zip' does not match any files.
+2026-03-21T17:25:11.3460484Z 🤔 Pattern 'dist/*.AppImage' does not match any files.
+2026-03-21T17:25:11.3461174Z 🤔 Pattern 'dist/*.deb' does not match any files.
+2026-03-21T17:25:11.5961001Z Found release v2.2.1 - Cross-Platform Support 🌍 (with id=299771281)
+2026-03-21T17:25:11.8679307Z ⬆️ Uploading NullChat-Setup-2.2.1.exe...
+2026-03-21T17:25:15.4623711Z ✅ Uploaded NullChat-Setup-2.2.1.exe
+2026-03-21T17:25:15.4625401Z Finalizing release...
+2026-03-21T17:25:15.4627832Z Getting assets list...
+2026-03-21T17:25:15.6305561Z 🎉 Release ready at https://github.com/xDerApfelx/NullChat/releases/tag/v2.2.1
+2026-03-21T17:25:15.6762017Z Post job cleanup.
+2026-03-21T17:25:16.0126848Z [command]"C:\Program Files\Git\usr\bin\tar.exe" --posix -cf cache.tzst --exclude cache.tzst -P -C D:/a/NullChat/NullChat --files-from manifest.txt --force-local --use-compress-program "zstd -T0"
+2026-03-21T17:25:18.1924924Z Sent 5046272 of 93425524 (5.4%), 4.8 MBs/sec
+2026-03-21T17:25:19.1922515Z Sent 71696384 of 93425524 (76.7%), 34.1 MBs/sec
+2026-03-21T17:25:19.7093727Z Sent 93425524 of 93425524 (100.0%), 35.3 MBs/sec
+2026-03-21T17:25:20.0002430Z Cache saved with the key: node-cache-Windows-x64-npm-ce7d755cb33944cdecf2f6daa47e0a1aed858b627de1c4370ddfa060eada0919
+2026-03-21T17:25:20.0270211Z Post job cleanup.
+2026-03-21T17:25:20.2547803Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-03-21T17:25:20.2854296Z git version 2.53.0.windows.1
+2026-03-21T17:25:20.2946314Z Temporarily overriding HOME='D:\a\_temp\3261c38e-a4bd-41c6-91c9-8a7803331df0' before making global git config changes
+2026-03-21T17:25:20.2947671Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-21T17:25:20.2958100Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\NullChat\NullChat
+2026-03-21T17:25:20.3273085Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-03-21T17:25:20.3571510Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-03-21T17:25:20.8868053Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-21T17:25:20.9123212Z http.https://github.com/.extraheader
+2026-03-21T17:25:20.9173804Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-03-21T17:25:20.9472063Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-03-21T17:25:21.4620725Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-03-21T17:25:21.4913803Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-03-21T17:25:22.0327526Z Cleaning up orphan processes
+2026-03-21T17:25:22.0366426Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-node@v4, softprops/action-gh-release@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

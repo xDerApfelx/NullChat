@@ -1,0 +1,6 @@
+﻿2026-03-21T17:25:15.6761994Z Post job cleanup.
+2026-03-21T17:25:16.0126811Z [command]"C:\Program Files\Git\usr\bin\tar.exe" --posix -cf cache.tzst --exclude cache.tzst -P -C D:/a/NullChat/NullChat --files-from manifest.txt --force-local --use-compress-program "zstd -T0"
+2026-03-21T17:25:18.1924889Z Sent 5046272 of 93425524 (5.4%), 4.8 MBs/sec
+2026-03-21T17:25:19.1922477Z Sent 71696384 of 93425524 (76.7%), 34.1 MBs/sec
+2026-03-21T17:25:19.7093695Z Sent 93425524 of 93425524 (100.0%), 35.3 MBs/sec
+2026-03-21T17:25:20.0002397Z Cache saved with the key: node-cache-Windows-x64-npm-ce7d755cb33944cdecf2f6daa47e0a1aed858b627de1c4370ddfa060eada0919
