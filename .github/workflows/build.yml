@@ -19,7 +19,7 @@ jobs:
           - os: macos-latest
             platform: mac
             args: --mac --x64 --arm64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux
             args: --linux --x64
 
@@ -47,6 +47,7 @@ jobs:
         run: npx electron-builder ${{ matrix.args }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
 
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v2
