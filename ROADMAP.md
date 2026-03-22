@@ -15,7 +15,7 @@ Welcome to the future plans for **NullChat**!
 ## 🚀 Upcoming Features
 *Concrete plans for the near future.*
 
-- [ ] **Advanced Audio Settings:** ✅ Shipped in v2.1.0
+- [x] **Advanced Audio Settings:** Shipped in v2.1.0
 
 ## 💡 Concepts & Ideas
 *Big ideas we are exploring (experimental).*
@@ -23,7 +23,7 @@ Welcome to the future plans for **NullChat**!
 - [ ] **Optional Chat Persistence:** Manually enable chat history for specific friends (encrypted & local).
 - [ ] **Shorter Friend Codes:** Create user-friendly, short IDs.
 - [ ] **Mobile Version:** NullChat for Android (and maybe iOS).
-- [ ] **Cross-Platform Support:** Optimize for Linux and macOS.
+- [x] **Cross-Platform Support:** Shipped in v2.2.1 — Windows, macOS, and Linux builds.
 - [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
