@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "author": {
         "name": "xDerApfelx",
@@ -54,8 +54,9 @@
         },
         "nsis": {
             "oneClick": false,
+            "perMachine": false,
+            "allowElevation": false,
             "allowToChangeInstallationDirectory": true,
-            "allowElevation": true,
             "runAfterFinish": true,
             "createDesktopShortcut": true,
             "createStartMenuShortcut": true,

@@ -14,7 +14,7 @@ const disconnectBtn = document.getElementById('disconnect-btn');
 const peerAvatar = document.getElementById('peer-avatar');
 const peerNameEl = document.getElementById('peer-name');
 const peerStatusEl = document.getElementById('peer-status');
-const connQualityDot = document.getElementById('conn-quality-dot');
+const connQualityBars = document.getElementById('conn-quality-bars');
 const toastContainer = document.getElementById('toast-container');
 const MAX_VISIBLE_TOASTS = 4;
 const toastQueue = [];
@@ -774,7 +774,7 @@ function showLogin() {
     muteBtn.classList.remove('muted');
     if (participantBar) participantBar.style.display = 'none';
     if (participantList) participantList.innerHTML = '';
-    if (connQualityDot) connQualityDot.classList.add('hidden');
+    if (connQualityBars) connQualityBars.classList.add('hidden');
 
     // Close search if open
     closeSearch();
@@ -3801,6 +3801,13 @@ let lastBytesReceived = new Map(); // Map<PeerId, number>
 
 function startQualityMonitor() {
     if (qualityIntervalId) return;
+    // Show bars immediately in neutral state while waiting for first stats
+    if (connQualityBars) {
+        connQualityBars.classList.remove('hidden', 'quality-good', 'quality-fair', 'quality-poor');
+        connQualityBars.title = 'Connection quality: measuring...';
+    }
+    // First poll after 1.5s (WebRTC needs time to establish), then every 5s
+    setTimeout(pollConnectionQuality, 1500);
     qualityIntervalId = setInterval(pollConnectionQuality, QUALITY_POLL_MS);
 }
 
@@ -3811,9 +3818,9 @@ function stopQualityMonitor() {
     }
     lastBytesSent.clear();
     lastBytesReceived.clear();
-    if (connQualityDot) {
-        connQualityDot.classList.add('hidden');
-        connQualityDot.className = 'conn-quality-dot hidden';
+    if (connQualityBars) {
+        connQualityBars.classList.add('hidden');
+        connQualityBars.className = 'conn-quality-bars hidden';
     }
 }
 
@@ -3859,7 +3866,7 @@ async function pollConnectionQuality() {
 
     if (peerCount === 0) {
         // No voice calls active — hide quality dot
-        if (connQualityDot) connQualityDot.classList.add('hidden');
+        if (connQualityBars) connQualityBars.classList.add('hidden');
         return;
     }
 
@@ -3879,10 +3886,10 @@ async function pollConnectionQuality() {
         label = 'Poor';
     }
 
-    if (connQualityDot) {
-        connQualityDot.classList.remove('hidden', 'quality-good', 'quality-fair', 'quality-poor');
-        connQualityDot.classList.add('quality-' + quality);
-        connQualityDot.title = `Connection: ${label} | RTT: ${Math.round(avgRtt)}ms | Loss: ${avgLoss.toFixed(1)}%`;
+    if (connQualityBars) {
+        connQualityBars.classList.remove('hidden', 'quality-good', 'quality-fair', 'quality-poor');
+        connQualityBars.classList.add('quality-' + quality);
+        connQualityBars.title = `Connection: ${label} | RTT: ${Math.round(avgRtt)}ms | Loss: ${avgLoss.toFixed(1)}%`;
     }
 }
 

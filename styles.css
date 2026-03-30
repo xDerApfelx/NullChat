@@ -292,18 +292,32 @@ body {
   color: var(--success);
 }
 
-.conn-quality-dot {
-  font-size: 14px;
-  margin-left: 4px;
+.conn-quality-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: 6px;
   cursor: default;
-  transition: color 0.3s ease;
+  height: 16px;
 }
 
-.conn-quality-dot.quality-good { color: var(--success); }
-.conn-quality-dot.quality-fair { color: #f0a030; }
-.conn-quality-dot.quality-poor { color: var(--danger); }
+.conn-quality-bars .bar {
+  width: 4px;
+  border-radius: 1px;
+  background: var(--text-muted);
+  transition: background 0.3s ease;
+}
 
-.conn-quality-dot.hidden {
+.conn-quality-bars .bar-1 { height: 5px; }
+.conn-quality-bars .bar-2 { height: 10px; }
+.conn-quality-bars .bar-3 { height: 16px; }
+
+.conn-quality-bars.quality-good .bar { background: var(--success); }
+.conn-quality-bars.quality-fair .bar-1 { background: #f0a030; }
+.conn-quality-bars.quality-fair .bar-2 { background: #f0a030; }
+.conn-quality-bars.quality-poor .bar-1 { background: var(--danger); }
+
+.conn-quality-bars.hidden {
   display: none;
 }
 
