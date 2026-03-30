@@ -12,21 +12,15 @@ Welcome to the future plans for **NullChat**!
 - [ ] **UI & Overlay Polish:** Improve the overall look and feel.
 - [ ] **General Troubleshooting:** Fixing bugs and improving stability.
 
-## 🚀 Upcoming Features
-*Concrete plans for the near future.*
-
-- [x] **Advanced Audio Settings:** Shipped in v2.1.0
-
 ## 💡 Concepts & Ideas
 *Big ideas we are exploring (experimental).*
 
-- [ ] **Optional Chat Persistence:** Manually enable chat history for specific friends (encrypted & local).
 - [ ] **Shorter Friend Codes:** Create user-friendly, short IDs.
 - [ ] **Mobile Version:** NullChat for Android (and maybe iOS).
-- [x] **Cross-Platform Support:** Shipped in v2.2.1 — Windows, macOS, and Linux builds.
-- [ ] **Temporary File Transfer:** Send files directly P2P (RAM-based, expire after ~1h).
 
 ## ✅ Completed Milestones
+- [x] **v3.0.0:** **The Big One.** Encrypted chat recording, file sharing, message search, desktop notifications, 12-block UX overhaul, and much more.
+- [x] **v2.2.1:** **Cross-Platform Release.** Windows, macOS, and Linux builds via GitHub Actions CI/CD.
 - [x] **v2.1.0:** **The Audio Update.** Full audio control: device selection, mic test, noise suppression, VAD, speaker highlight & per-person volume.
 - [x] **v2.0.0:** **The Global Mesh & Update Center.** Stable Group Chat, Integrated Downloader, Settings Menu & Version History.
 - [x] **v2.0-beta.1:** Group Chat (Mesh Networking) Public Beta.

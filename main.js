@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, clipboard, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, shell, dialog, Notification, Tray, Menu, nativeImage, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const log = require('./logger');
+const chatStore = require('./chatStore');
 
 // ── Platform helper ────────────────────────────────────────────────────────────
 function getPlatformInstallerExtension() {
@@ -261,14 +262,71 @@ ipcMain.handle('install-update', () => {
     return true;
 });
 
+// ── Window bounds persistence ───────────────────────────────────────────────────
+const BOUNDS_PATH = path.join(app.getPath('userData'), 'window-bounds.json');
+let boundsDebounceId = null;
+
+function loadWindowBounds() {
+    try {
+        if (fs.existsSync(BOUNDS_PATH)) {
+            const bounds = JSON.parse(fs.readFileSync(BOUNDS_PATH, 'utf-8'));
+            // Validate that the window is on a visible display
+            const displays = screen.getAllDisplays();
+            const visible = displays.some(d => {
+                const area = d.workArea;
+                return bounds.x < area.x + area.width && bounds.x + bounds.width > area.x &&
+                       bounds.y < area.y + area.height && bounds.y + bounds.height > area.y;
+            });
+            if (visible && bounds.width >= 480 && bounds.height >= 400) return bounds;
+        }
+    } catch (_) { }
+    return null;
+}
+
+function saveWindowBounds() {
+    if (!mainWindow || mainWindow.isMinimized() || mainWindow.isMaximized()) return;
+    if (boundsDebounceId) clearTimeout(boundsDebounceId);
+    boundsDebounceId = setTimeout(() => {
+        try {
+            const bounds = mainWindow.getBounds();
+            fs.writeFileSync(BOUNDS_PATH, JSON.stringify(bounds), 'utf-8');
+        } catch (_) { }
+    }, 500);
+}
+
 // ── Window creation ─────────────────────────────────────────────────────────────
 let mainWindow;
+let tray = null;
+let isQuitting = false;
+
+function createTray() {
+    if (tray) return;
+    const iconPath = path.join(__dirname, 'assets', 'icon.png');
+    const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+    tray = new Tray(trayIcon);
+    tray.setToolTip('NullChat');
+
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Show NullChat', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
+        { type: 'separator' },
+        { label: 'Quit', click: () => { isQuitting = true; app.quit(); } }
+    ]);
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } });
+}
+
+function destroyTray() {
+    if (tray) { tray.destroy(); tray = null; }
+}
 
 function createWindow() {
     log.info('Creating main window');
+    const savedBounds = loadWindowBounds();
     mainWindow = new BrowserWindow({
-        width: 900,
-        height: 650,
+        width: savedBounds ? savedBounds.width : 900,
+        height: savedBounds ? savedBounds.height : 650,
+        x: savedBounds ? savedBounds.x : undefined,
+        y: savedBounds ? savedBounds.y : undefined,
         minWidth: 480,
         minHeight: 400,
         backgroundColor: '#36393f',
@@ -281,6 +339,9 @@ function createWindow() {
             sandbox: false
         }
     });
+
+    mainWindow.on('resize', saveWindowBounds);
+    mainWindow.on('move', saveWindowBounds);
 
     if (process.platform !== 'darwin') {
         mainWindow.setMenuBarVisibility(false);
@@ -295,6 +356,16 @@ function createWindow() {
         mainWindow.show();
         log.info('Main window visible');
         checkForUpdates();
+    });
+
+    // Minimize to tray instead of closing (when enabled)
+    mainWindow.on('close', (e) => {
+        if (!isQuitting && loadSettings().minimizeToTray) {
+            e.preventDefault();
+            mainWindow.hide();
+            if (!tray) createTray();
+            log.info('Window hidden to tray');
+        }
     });
 
     mainWindow.on('closed', () => {
@@ -322,8 +393,8 @@ ipcMain.handle('get-app-version', () => {
 });
 
 ipcMain.handle('open-external', (_event, url) => {
-    // Only allow GitHub URLs for security
-    if (typeof url === 'string' && url.startsWith('https://github.com/')) {
+    // Only allow http/https URLs for security
+    if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://'))) {
         log.info('Opening external URL in browser');
         shell.openExternal(url);
     } else {
@@ -367,7 +438,11 @@ const DEFAULT_SETTINGS = {
     noiseSuppression: true,
     vadEnabled: true,
     vadThreshold: 0.015,
-    ringtoneVolume: 0.25
+    ringtoneVolume: 0.25,
+    showWelcome: true,
+    notificationsEnabled: true,
+    notificationSounds: true,
+    minimizeToTray: false
 };
 
 function loadSettings() {
@@ -398,6 +473,11 @@ ipcMain.handle('save-settings', (_event, data) => {
     }
 });
 
+// Tray toggle — create/destroy tray when setting changes
+ipcMain.on('tray-toggle', (_event, enabled) => {
+    if (enabled) { createTray(); } else { destroyTray(); }
+});
+
 // Renderer log relay — accept anonymous log entries from the renderer process
 ipcMain.on('log-from-renderer', (_event, level, message) => {
     if (level === 'error') log.error(`[renderer] ${message}`);
@@ -405,8 +485,174 @@ ipcMain.on('log-from-renderer', (_event, level, message) => {
     else log.info(`[renderer] ${message}`);
 });
 
+// ── Chat persistence IPC handlers ────────────────────────────────────────────────
+const userDataPath = app.getPath('userData');
+
+ipcMain.handle('chat-save-message', (_event, friendPeerId, sender, text, msgType) => {
+    try {
+        return chatStore.saveMessage(userDataPath, cachedUserId, friendPeerId, sender, text, msgType || 'text');
+    } catch (err) {
+        log.error(`Failed to save chat message: ${err.message}`);
+        return null;
+    }
+});
+
+ipcMain.handle('chat-load-messages', (_event, friendPeerId, limit, beforeId) => {
+    try {
+        return chatStore.loadMessages(userDataPath, cachedUserId, friendPeerId, limit || 50, beforeId || 0);
+    } catch (err) {
+        log.error(`Failed to load chat messages: ${err.message}`);
+        return [];
+    }
+});
+
+ipcMain.handle('chat-get-message-count', (_event, friendPeerId) => {
+    try {
+        return chatStore.getMessageCount(userDataPath, cachedUserId, friendPeerId);
+    } catch (err) {
+        log.error(`Failed to get message count: ${err.message}`);
+        return 0;
+    }
+});
+
+ipcMain.handle('chat-get-size', (_event, friendPeerId) => {
+    try {
+        return chatStore.getChatSize(userDataPath, cachedUserId, friendPeerId);
+    } catch (err) {
+        return 0;
+    }
+});
+
+ipcMain.handle('chat-delete', (_event, friendPeerId) => {
+    try {
+        chatStore.deleteChat(userDataPath, cachedUserId, friendPeerId);
+        log.info('Chat deleted for peer');
+        return true;
+    } catch (err) {
+        log.error(`Failed to delete chat: ${err.message}`);
+        return false;
+    }
+});
+
+ipcMain.handle('chat-exists', (_event, friendPeerId) => {
+    try {
+        return chatStore.chatExists(userDataPath, friendPeerId);
+    } catch (err) {
+        return false;
+    }
+});
+
+ipcMain.handle('chat-set-recording', (_event, friendPeerId, isRecording) => {
+    try {
+        chatStore.setRecordingState(userDataPath, cachedUserId, friendPeerId, isRecording);
+        return true;
+    } catch (err) {
+        log.error(`Failed to set recording state: ${err.message}`);
+        return false;
+    }
+});
+
+ipcMain.handle('chat-get-recording', (_event, friendPeerId) => {
+    try {
+        return chatStore.getRecordingState(userDataPath, cachedUserId, friendPeerId);
+    } catch (err) {
+        return false;
+    }
+});
+
+ipcMain.handle('chat-check-cleanup', () => {
+    try {
+        return chatStore.checkAutoCleanup(userDataPath, cachedUserId);
+    } catch (err) {
+        log.error(`Auto-cleanup check failed: ${err.message}`);
+        return { warnings: [], deleted: [] };
+    }
+});
+
+ipcMain.handle('chat-search', (_event, friendPeerId, query, limit) => {
+    try {
+        return chatStore.searchMessages(userDataPath, cachedUserId, friendPeerId, query, limit || 50);
+    } catch (err) {
+        log.error(`Failed to search chat messages: ${err.message}`);
+        return [];
+    }
+});
+
+ipcMain.handle('chat-list', () => {
+    try {
+        return chatStore.listChats(userDataPath);
+    } catch (err) {
+        log.error(`Failed to list chats: ${err.message}`);
+        return [];
+    }
+});
+
+// ── Notification IPC handler ────────────────────────────────────────────────
+ipcMain.on('show-notification', (_event, title, body) => {
+    if (!Notification.isSupported()) return;
+    const n = new Notification({
+        title: title || 'NullChat',
+        body: body || '',
+        icon: path.join(__dirname, 'assets', 'icon.png'),
+        silent: true  // Sound is handled by the renderer
+    });
+    n.on('click', () => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
+        }
+    });
+    n.show();
+});
+
+// ── File transfer IPC handlers ──────────────────────────────────────────────
+ipcMain.handle('file-open-dialog', async () => {
+    if (!mainWindow) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile']
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const filePath = result.filePaths[0];
+    const stats = fs.statSync(filePath);
+    return {
+        filePath,
+        fileName: path.basename(filePath),
+        fileSize: stats.size
+    };
+});
+
+ipcMain.handle('file-read', async (_event, filePath) => {
+    try {
+        const buffer = fs.readFileSync(filePath);
+        return buffer;
+    } catch (err) {
+        log.error(`Failed to read file: ${err.message}`);
+        return null;
+    }
+});
+
+ipcMain.handle('file-save-as', async (_event, fileName, buffer) => {
+    if (!mainWindow) return null;
+    const result = await dialog.showSaveDialog(mainWindow, {
+        defaultPath: fileName
+    });
+    if (result.canceled || !result.filePath) return null;
+    try {
+        fs.writeFileSync(result.filePath, Buffer.from(buffer));
+        log.info(`File saved: ${result.filePath}`);
+        return result.filePath;
+    } catch (err) {
+        log.error(`Failed to save file: ${err.message}`);
+        return null;
+    }
+});
+
 // ── App lifecycle ───────────────────────────────────────────────────────────────
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    chatStore.initMasterKey(app.getPath('userData'));
+    log.info('Chat persistence master key initialized');
+    createWindow();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -416,6 +662,9 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+    isQuitting = true;
+    destroyTray();
+    chatStore.closeAll();
     log.shutdown();
 });
 

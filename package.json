@@ -1,6 +1,6 @@
 {
     "name": "nullchat",
-    "version": "2.2.1",
+    "version": "3.0.0",
     "description": "Minimalistic P2P Chat & Voice App using Electron and PeerJS",
     "author": {
         "name": "xDerApfelx",
@@ -19,12 +19,13 @@
         "make:all": "electron-builder --win --x64 --mac --x64 --arm64 --linux --x64"
     },
     "dependencies": {
+        "better-sqlite3": "^12.8.0",
         "peerjs": "^1.5.5",
         "uuid": "^13.0.0"
     },
     "devDependencies": {
-        "electron": "^34.0.0",
-        "electron-builder": "^25.1.8"
+        "electron": "^41.0.3",
+        "electron-builder": "^26.8.1"
     },
     "build": {
         "appId": "com.nullchat.app",
@@ -68,6 +69,7 @@
             "renderer.js",
             "styles.css",
             "logger.js",
+            "chatStore.js",
             "package.json",
             "assets"
         ]

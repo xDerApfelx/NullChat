@@ -47,7 +47,11 @@ NullChat is available for **Windows**, **macOS**, and **Linux**:
 *   🌐 **Peer-to-Peer & Private:** Direct connection via WebRTC. Your messages and voice calls travel directly between devices — no central server stores or relays your data. A lightweight signaling server is only used for the initial handshake (see [How it Works](#how-it-works)).
 *   👥 **Group Voice & Text Chat:** Seamlessly connect with multiple friends in a single secure mesh call.
 *   🛡️ **Privacy First:** You have full control. Incoming connections always require your approval, ensuring nobody can force-join your calls.
-*   🫂 **Friends Sidebar:** Save your friends locally and assign custom nicknames for quick, one-click connections.
+*   🫂 **Friends Sidebar:** Save your friends locally and assign custom nicknames for quick, one-click connections. Online/offline status indicators show who's available.
+*   📁 **File Sharing:** Send and receive files directly over P2P — drag & drop, clipboard paste, or file picker. SHA-256 verified, with inline image previews.
+*   💾 **Optional Chat Recording:** Opt-in encrypted chat persistence for 1-on-1 conversations. Both sides must agree. AES-256-GCM encrypted, stored locally, deletable anytime.
+*   🔍 **Message Search:** Search through recorded chat history with Ctrl+F.
+*   🔔 **Desktop Notifications & Sounds:** Native OS notifications and audio cues for messages, calls, and file transfers.
 *   📞 **Smart Notifications:** Known friends trigger a subtle notification, while unknown callers activate a clear request screen.
 *   📥 **Integrated Updates:** Get notified and install new versions directly within the app.
 *   🎚️ **Full Audio Control:** Choose your microphone and speaker, test your mic with a live level meter, set individual call volumes per person, and fine-tune noise suppression and voice activity detection — all from the Settings menu.
@@ -114,7 +118,7 @@ Being honest matters. There are things NullChat intentionally *can't* do:
 
 - **Both users must be online at the same time.** Because there are no servers storing messages, there's no way to deliver messages when your friend is offline. It's a live connection — if they're not there, it doesn't work. This is the direct trade-off for having zero data storage.
 - **Desktop only.** Available for Windows, macOS, and Linux — but no mobile support yet.
-- **No message history.** By design — everything lives in RAM and disappears when you close the app.
+- **No message history by default.** Everything lives in RAM and disappears when you close the app — unless both sides explicitly enable the optional Chat Recording feature.
 
 ---
 
@@ -167,7 +171,7 @@ The person you're directly connected to *could* technically see your IP address 
 <details>
 <summary><strong>Why is there no message history?</strong></summary>
 
-By design. NullChat stores nothing — all messages exist only in RAM while the app is running. The moment you close the app, everything is gone. This is a deliberate privacy choice: what doesn't exist can't be leaked, hacked, or subpoenaed.
+By default, NullChat stores nothing — all messages exist only in RAM while the app is running. The moment you close the app, everything is gone. This is a deliberate privacy choice: what doesn't exist can't be leaked, hacked, or subpoenaed. However, if both sides agree, you can enable **Chat Recording** for 1-on-1 conversations. Recorded messages are encrypted with AES-256-GCM and stored locally — you can delete them anytime.
 </details>
 
 <details>

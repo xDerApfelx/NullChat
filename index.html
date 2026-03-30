@@ -4,9 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self';
-                 script-src 'self' https://unpkg.com;
+                 script-src 'self';
                  connect-src *;
                  media-src *;
+                 img-src 'self' blob: data:;
                  style-src 'self' 'unsafe-inline';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NullChat</title>
@@ -29,7 +30,7 @@
         <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Toggle sidebar">◀</button>
       </div>
       <div class="friends-list" id="friends-list">
-        <p class="friends-empty" id="friends-empty">No contacts yet</p>
+        <p class="friends-empty" id="friends-empty" style="display:none;">No contacts yet — connect to someone and click 'Add Friend' to save them here.</p>
       </div>
     </aside>
 
@@ -40,6 +41,7 @@
       <div id="login-view">
         <!-- Top-right action buttons -->
         <div class="login-actions">
+          <button class="login-action-btn" id="help-btn" title="Help">❓</button>
           <button class="login-action-btn" id="version-history-btn" title="Version History">📋</button>
           <button class="login-action-btn" id="settings-btn" title="Settings">⚙️</button>
         </div>
@@ -48,6 +50,9 @@
         <div class="update-banner" id="update-banner" style="display:none;">
           <span class="update-banner-fill" id="update-banner-fill"></span>
           <span class="update-banner-text" id="update-banner-text">🔔 Update available</span>
+        </div>
+        <div class="update-hint" id="update-hint" style="display:none;">
+          Since NullChat is peer-to-peer, both sides should use the same version to avoid connection issues.
         </div>
 
         <!-- Revoke warning banner -->
@@ -80,27 +85,91 @@
         <div class="chat-header">
           <div class="peer-info">
             <button class="chat-burger-btn hidden" id="chat-burger-btn" title="Open contacts">☰</button>
-            <div class="peer-avatar" id="peer-avatar">?</div>
+            <div class="peer-avatar-wrap">
+              <div class="peer-avatar" id="peer-avatar">?</div>
+              <span class="avatar-dropdown-arrow">&#9660;</span>
+            </div>
             <div>
               <div class="peer-name" id="peer-name">Friend</div>
               <div class="peer-status" id="peer-status">● Connected</div>
             </div>
+            <span class="conn-quality-dot hidden" id="conn-quality-dot" title="Connection quality: measuring...">●</span>
+            <span class="peer-mute-indicator hidden" id="peer-mute-indicator" title="Microphone muted">🔇</span>
+            <span class="recording-paused-badge hidden" id="recording-paused-badge" title="Chat recording is paused (group call active)">⏸ Recording paused</span>
             <button class="add-friend-btn" id="add-friend-btn" title="Add to contacts">+</button>
           </div>
           <div class="controls">
-            <button class="invite-btn" id="invite-btn" title="Invite to call">👥 Invite</button>
-            <button class="mute-btn" id="mute-btn">🎤 Mute</button>
+            <div class="record-menu-wrap hidden" id="record-menu-wrap">
+              <button class="record-btn" id="record-btn" title="Recording options">&#9998;</button>
+              <div class="record-dropdown hidden" id="record-dropdown">
+                <button class="record-dropdown-item" id="record-start-btn">
+                  <span class="record-dropdown-icon">&#9998;</span>
+                  <div>
+                    <div class="record-dropdown-label">Start Recording</div>
+                    <div class="record-dropdown-desc">Both sides must agree to record</div>
+                  </div>
+                </button>
+                <button class="record-dropdown-item record-dropdown-danger" id="record-delete-btn">
+                  <span class="record-dropdown-icon">&#128465;</span>
+                  <div>
+                    <div class="record-dropdown-label">Delete Chat History</div>
+                    <div class="record-dropdown-desc">Permanently deletes on both devices</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <button class="search-toggle-btn hidden" id="search-toggle-btn" title="Search messages (Ctrl+F)">&#128269;</button>
+            <button class="invite-btn" id="invite-btn" title="Invite to call">&#128101; Invite</button>
+            <button class="mute-btn" id="mute-btn">&#127908; Mute</button>
             <button class="disconnect-btn" id="disconnect-btn">Disconnect</button>
           </div>
+        </div>
+
+        <!-- Search bar (only visible when chat recording is active) -->
+        <div class="chat-search-bar hidden" id="chat-search-bar">
+          <input type="text" id="chat-search-input" placeholder="Search messages…" autocomplete="off" spellcheck="false" />
+          <span class="chat-search-count" id="chat-search-count"></span>
+          <button class="chat-search-nav" id="chat-search-prev" title="Previous result">&#9650;</button>
+          <button class="chat-search-nav" id="chat-search-next" title="Next result">&#9660;</button>
+          <button class="chat-search-close" id="chat-search-close" title="Close search">&#10005;</button>
         </div>
 
         <div class="participant-bar" id="participant-bar" style="display:none;">
           <div class="participant-list" id="participant-list"></div>
         </div>
 
-        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="history-loader hidden" id="history-loader">Loading older messages...</div>
+          <!-- Drop zone overlay for drag & drop file transfer -->
+          <div class="drop-zone-overlay hidden" id="drop-zone-overlay">
+            <div class="drop-zone-content">
+              <span class="drop-zone-icon">&#128206;</span>
+              <span class="drop-zone-text">Drop file to send</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll-to-bottom button -->
+        <button type="button" class="scroll-bottom-btn hidden" id="scroll-bottom-btn" title="Scroll to bottom">▼</button>
+
+        <!-- Combined status bar (always visible in chat) -->
+        <div class="chat-status-bar" id="chat-status-bar">
+          <div class="status-bar-half status-bar-disk" id="status-bar-disk">
+            <span class="status-bar-icon" id="recording-quill">&#9998;</span>
+            <span class="status-bar-label" id="recording-size">—</span>
+            <span class="status-bar-suffix">on Disk</span>
+          </div>
+          <div class="status-bar-divider"></div>
+          <div class="status-bar-half status-bar-ram" id="status-bar-ram">
+            <span class="status-bar-icon">&#128190;</span>
+            <span class="status-bar-label" id="ram-size">0 KB</span>
+            <span class="status-bar-suffix">in RAM</span>
+            <button type="button" class="status-bar-clear-btn" id="ram-clear-btn" title="Clear messages and files from memory">&#10005;</button>
+          </div>
+        </div>
 
         <div class="chat-input-bar">
+          <button class="attach-btn" id="attach-btn" title="Send file">&#128206;</button>
           <input type="text" id="msg-input" placeholder="Type a message…" autocomplete="off" spellcheck="false" />
           <button class="send-btn" id="send-btn">Send</button>
         </div>
@@ -129,10 +198,23 @@
       <h3>📞 Incoming Connection</h3>
       <p class="request-modal-name" id="request-modal-name"></p>
       <p class="request-modal-id" id="request-modal-id"></p>
+      <p class="request-countdown" id="request-countdown"></p>
       <div class="request-modal-actions">
         <button class="request-decline-btn" id="request-decline-btn">Decline</button>
         <button class="request-accept-btn" id="request-accept-btn">Accept</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ OUTGOING CALL SCREEN ═══════════════════════ -->
+  <div class="calling-overlay" id="calling-overlay" style="display:none;">
+    <div class="calling-modal">
+      <div class="calling-avatar" id="calling-avatar">?</div>
+      <p class="calling-name" id="calling-name"></p>
+      <p class="calling-status" id="calling-status">Connecting...</p>
+      <p class="calling-countdown" id="calling-countdown"></p>
+      <div class="calling-dots"><span></span><span></span><span></span></div>
+      <button class="calling-cancel-btn" id="calling-cancel-btn">Cancel</button>
     </div>
   </div>
 
@@ -161,7 +243,60 @@
             <span class="settings-item-desc">Automatically download new versions in the background</span>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="setting-auto-update" checked />
+            <input type="checkbox" id="setting-auto-update" title="Auto-Download Updates" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Show Welcome Screen</span>
+            <span class="settings-item-desc">Show the welcome message when the app starts</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-welcome" title="Show Welcome Screen" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Reduce Animations</span>
+            <span class="settings-item-desc">Disable animations and transitions for a calmer experience</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-reduce-motion" title="Reduce Animations" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Minimize to Tray</span>
+            <span class="settings-item-desc">Hide the app to the system tray when closing the window instead of quitting</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-minimize-to-tray" title="Minimize to Tray" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- ── Notifications ── -->
+        <div class="settings-section-label">Notifications</div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Desktop Notifications</span>
+            <span class="settings-item-desc">Show system notifications for messages and calls when the app is in the background</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-notifications" title="Desktop Notifications" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Notification Sounds</span>
+            <span class="settings-item-desc">Play a short sound for messages, file transfers, and connection events</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-notif-sounds" title="Notification Sounds" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -173,14 +308,14 @@
             <span class="settings-item-label">Microphone</span>
             <span class="settings-item-desc">Select default input device</span>
           </div>
-          <select id="setting-mic-device" class="settings-select"></select>
+          <select id="setting-mic-device" class="settings-select" title="Microphone"></select>
         </div>
         <div class="settings-item">
           <div class="settings-item-info">
             <span class="settings-item-label">Speaker</span>
             <span class="settings-item-desc">Select default output device</span>
           </div>
-          <select id="setting-speaker-device" class="settings-select"></select>
+          <select id="setting-speaker-device" class="settings-select" title="Speaker"></select>
         </div>
 
         <!-- ── Microphone Test ── -->
@@ -196,7 +331,7 @@
           </div>
           <div class="settings-slider-row">
             <span class="settings-slider-label">Mic Gain</span>
-            <input type="range" id="setting-mic-gain" class="settings-range" min="0" max="200" value="100" />
+            <input type="range" id="setting-mic-gain" class="settings-range" title="Mic Gain" min="0" max="200" value="100" />
             <span class="settings-slider-value" id="mic-gain-value">100%</span>
           </div>
         </div>
@@ -209,7 +344,7 @@
             <span class="settings-item-desc">Reduce background noise and echo</span>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="setting-noise-suppression" checked />
+            <input type="checkbox" id="setting-noise-suppression" title="Noise Suppression" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -219,15 +354,17 @@
             <span class="settings-item-desc">Only transmit when you speak</span>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="setting-vad" checked />
+            <input type="checkbox" id="setting-vad" title="Voice Activity Detection" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="settings-item" id="vad-sensitivity-row">
           <div class="settings-slider-row">
             <span class="settings-slider-label">VAD Sensitivity</span>
-            <input type="range" id="setting-vad-threshold" class="settings-range" min="1" max="50" value="15" />
-            <span class="settings-slider-value" id="vad-threshold-value">15</span>
+            <span class="settings-slider-hint">Sensitive</span>
+            <input type="range" id="setting-vad-threshold" class="settings-range" title="VAD Sensitivity" min="1" max="50" value="25" />
+            <span class="settings-slider-hint">Less sensitive</span>
+            <span class="settings-slider-value" id="vad-threshold-value">25</span>
           </div>
         </div>
 
@@ -236,13 +373,32 @@
         <div class="settings-item">
           <div class="settings-slider-row">
             <span class="settings-slider-label">Ringtone Volume</span>
-            <input type="range" id="setting-ringtone-volume" class="settings-range" min="0" max="100" value="25" />
+            <input type="range" id="setting-ringtone-volume" class="settings-range" title="Ringtone Volume" min="0" max="100" value="25" />
             <span class="settings-slider-value" id="ringtone-volume-value">25%</span>
+            <button type="button" class="ringtone-test-btn" id="ringtone-test-btn" title="Preview ringtone">▶ Test</button>
           </div>
+        </div>
+
+        <!-- ── Keyboard Shortcuts ── -->
+        <div class="settings-section-label">Keyboard Shortcuts</div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Toggle Mute</span>
+            <span class="settings-item-desc">Mute/unmute your microphone during a call</span>
+          </div>
+          <button class="shortcut-input" id="shortcut-mute">Ctrl+M</button>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-info">
+            <span class="settings-item-label">Disconnect</span>
+            <span class="settings-item-desc">Leave the current call</span>
+          </div>
+          <button class="shortcut-input" id="shortcut-disconnect">Ctrl+D</button>
         </div>
 
       </div>
       <div class="settings-modal-actions">
+        <button class="settings-reset-btn" id="settings-reset-btn">Reset to Defaults</button>
         <button class="settings-close-btn" id="settings-close-btn">Close</button>
       </div>
     </div>
@@ -261,11 +417,68 @@
     </div>
   </div>
 
-  <!-- Toast container -->
-  <div class="toast" id="toast"></div>
+  <!-- Help Modal -->
+  <div class="help-overlay" id="help-overlay" style="display:none;">
+    <div class="help-modal">
+      <h2>&#10067; Help</h2>
+      <p class="help-modal-sub">Everything you need to know about NullChat</p>
+      <div class="help-sections" id="help-sections"></div>
+      <div class="help-modal-actions">
+        <button class="help-close-btn" id="help-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- PeerJS from CDN -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- ═══════════════════ RECORDING CONSENT REQUEST ═══════════════════ -->
+  <div class="recording-overlay" id="recording-overlay" style="display:none;">
+    <div class="recording-modal">
+      <h3>&#9998; Chat Recording Request</h3>
+      <p class="recording-modal-text" id="recording-modal-text">Your friend wants to record this chat. Do you agree?</p>
+      <p class="recording-modal-info">Messages will be saved locally and encrypted on both devices.</p>
+      <div class="recording-modal-actions">
+        <button class="recording-decline-btn" id="recording-decline-btn">Decline</button>
+        <button class="recording-accept-btn" id="recording-accept-btn">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ DEATH BUTTON CONFIRM ═══════════════════ -->
+  <div class="death-overlay" id="death-overlay" style="display:none;">
+    <div class="death-modal">
+      <h3>&#128465; Delete Chat History</h3>
+      <p class="death-modal-text">Are you sure? The entire chat history will be permanently deleted on <strong>both devices</strong>.</p>
+      <p class="death-modal-warning">This action cannot be undone.</p>
+      <div class="death-modal-actions">
+        <button class="death-cancel-btn" id="death-cancel-btn">Cancel</button>
+        <button class="death-confirm-btn" id="death-confirm-btn">Delete Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ WELCOME POPUP ═══════════════════════ -->
+  <div class="welcome-overlay" id="welcome-overlay" style="display:none;">
+    <div class="welcome-arrow" id="welcome-arrow">&#11014;</div>
+    <div class="welcome-modal">
+      <h2>&#128075; Welcome to NullChat</h2>
+      <p class="welcome-text">NullChat is <strong>not like Discord or WhatsApp</strong>. There are no accounts, no servers, and no message history. Everything is peer-to-peer — you connect directly to the other person.</p>
+      <p class="welcome-text">To get started, share your <strong>Peer ID</strong> with a friend. They paste it in their app, click Connect, and you're in. Both people need to be online at the same time.</p>
+      <p class="welcome-text">Check the <strong>Help section</strong> (top-right corner) for tips and explanations. Found a bug? <a class="chat-link" id="welcome-github-link">Open an issue on GitHub</a>.</p>
+      <p class="welcome-text welcome-text-hint">Take a look at <strong>Settings</strong> to set up your microphone and customize shortcuts.</p>
+      <div class="welcome-footer">
+        <label class="welcome-checkbox-label">
+          <input type="checkbox" id="welcome-dont-show" />
+          <span>Don't show this again</span>
+        </label>
+        <button class="welcome-close-btn" id="welcome-close-btn">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container (stacking, max 4 visible) -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- PeerJS (local) -->
+  <script src="./node_modules/peerjs/dist/peerjs.min.js"></script>
   <script src="renderer.js"></script>
 </body>
 
