@@ -17,7 +17,7 @@
       "id": "2026-03-31-signature-issue",
       "color": "red",
       "blink": true,
-      "date": "2026-03-31",
+      "date": "2026-03-30",
       "title": "Important: Installation issue due to signature error",
       "summary": "The EXE can no longer run as admin. A reinstall to a different location is required.",
       "detail": "Due to a signature issue, NullChat can no longer be executed as administrator. This means the 'Install for all users' option on Windows is currently unavailable. The application must be installed to a different location, which unfortunately causes all previous data (ID, settings, contacts) to be lost. Every affected user will receive a new ID and must re-add their settings and friends. We sincerely apologize for the inconvenience and are working on a fix.",

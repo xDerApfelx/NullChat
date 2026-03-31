@@ -5041,7 +5041,6 @@ let newsExpanded = false;
 const newsFeed = document.getElementById('news-feed');
 const newsFeedDot = document.getElementById('news-feed-dot');
 const newsFeedPips = document.getElementById('news-feed-pips');
-const newsFeedClose = document.getElementById('news-feed-close');
 const newsFeedTitle = document.getElementById('news-feed-title');
 const newsFeedDate = document.getElementById('news-feed-date');
 const newsFeedSummary = document.getElementById('news-feed-summary');
@@ -5073,7 +5072,7 @@ function displayNewsItem(index) {
     newsFeed.style.borderLeftColor = color;
     newsFeedDot.style.background = color;
     newsFeedTitle.textContent = item.title;
-    newsFeedTitle.classList.toggle('news-blink', !!item.blink);
+    newsFeed.classList.toggle('news-blink', !!item.blink);
     newsFeedDate.textContent = formatNewsDate(item.date);
     newsFeedSummary.textContent = item.summary;
 
@@ -5115,19 +5114,6 @@ function stopNewsRotation() {
     }
 }
 
-function getDismissedNewsIds() {
-    try {
-        return JSON.parse(localStorage.getItem('news-dismissed') || '[]');
-    } catch (_) { return []; }
-}
-
-function dismissAllNews() {
-    const ids = newsItems.map(i => i.id);
-    const dismissed = getDismissedNewsIds();
-    const merged = [...new Set([...dismissed, ...ids])];
-    localStorage.setItem('news-dismissed', JSON.stringify(merged));
-}
-
 function showNewsFeed() {
     if (newsItems.length > 0 && newsFeed) {
         newsFeed.style.display = '';
@@ -5143,8 +5129,7 @@ function hideNewsFeed() {
 }
 
 function initNewsFeed(items) {
-    const dismissed = getDismissedNewsIds();
-    newsItems = items.filter(i => i.id && !dismissed.includes(i.id));
+    newsItems = items.filter(i => !!i.id);
 
     if (!newsItems.length) return;
 
@@ -5179,13 +5164,6 @@ newsFeedMore.addEventListener('click', () => {
         newsFeedMore.textContent = 'Click to read more';
         newsExpanded = false;
     }
-});
-
-// Close button — dismiss all current news
-newsFeedClose.addEventListener('click', () => {
-    dismissAllNews();
-    newsItems = [];
-    hideNewsFeed();
 });
 
 // IPC: receive news from main process
