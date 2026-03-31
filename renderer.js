@@ -718,6 +718,7 @@ async function showChat(peerId) {
     document.querySelector('.login-actions').style.display = 'none';
     loginView.style.display = 'none';
     chatView.style.display = 'flex';
+    hideNewsFeed();
 
     // Reset history tracking
     oldestLoadedMsgId = 0;
@@ -789,6 +790,7 @@ function showLogin() {
         recordingSizeInterval = null;
     }
     updateRecordingUI();
+    showNewsFeed();
 
 }
 
@@ -5024,4 +5026,169 @@ window.electronAPI.onUpdateAvailable((data) => {
             }, { once: true });
         }
     }
+});
+
+// ── News Feed ──────────────────────────────────────────────────────────────────
+const NEWS_COLORS = { red: '#ed4245', yellow: '#faa61a', green: '#3ba55d', blue: '#7289da' };
+const NEWS_ROTATION_INTERVAL = 8000;
+const NEWS_TRANSITION_DURATION = 300;
+
+let newsItems = [];
+let newsCurrentIndex = 0;
+let newsRotationTimer = null;
+let newsExpanded = false;
+
+const newsFeed = document.getElementById('news-feed');
+const newsFeedDot = document.getElementById('news-feed-dot');
+const newsFeedPips = document.getElementById('news-feed-pips');
+const newsFeedClose = document.getElementById('news-feed-close');
+const newsFeedTitle = document.getElementById('news-feed-title');
+const newsFeedDate = document.getElementById('news-feed-date');
+const newsFeedSummary = document.getElementById('news-feed-summary');
+const newsFeedMore = document.getElementById('news-feed-more');
+const newsFeedDetail = document.getElementById('news-feed-detail');
+
+function formatNewsDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.floor((todayStart - dateStart) / 86400000);
+
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 14) return '1 week ago';
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 60) return '1 month ago';
+    return `${Math.floor(diffDays / 30)} months ago`;
+}
+
+function displayNewsItem(index) {
+    if (!newsItems.length) return;
+    const item = newsItems[index];
+    const color = NEWS_COLORS[item.color] || NEWS_COLORS.blue;
+
+    newsFeed.style.borderLeftColor = color;
+    newsFeedDot.style.background = color;
+    newsFeedTitle.textContent = item.title;
+    newsFeedTitle.classList.toggle('news-blink', !!item.blink);
+    newsFeedDate.textContent = formatNewsDate(item.date);
+    newsFeedSummary.textContent = item.summary;
+
+    if (item.detail) {
+        newsFeedMore.style.display = '';
+        newsFeedDetail.textContent = item.detail;
+    } else {
+        newsFeedMore.style.display = 'none';
+        newsFeedDetail.style.display = 'none';
+    }
+
+    newsExpanded = false;
+    newsFeedDetail.style.display = 'none';
+    newsFeedMore.textContent = 'Click to read more';
+
+    // Update pips
+    const pips = newsFeedPips.querySelectorAll('.news-feed-pip');
+    pips.forEach((p, i) => p.classList.toggle('active', i === index));
+}
+
+function startNewsRotation() {
+    stopNewsRotation();
+    if (newsItems.length <= 1) return;
+    newsRotationTimer = setInterval(() => {
+        if (newsExpanded) return;
+        newsFeed.classList.add('news-fade');
+        setTimeout(() => {
+            newsCurrentIndex = (newsCurrentIndex + 1) % newsItems.length;
+            displayNewsItem(newsCurrentIndex);
+            newsFeed.classList.remove('news-fade');
+        }, NEWS_TRANSITION_DURATION);
+    }, NEWS_ROTATION_INTERVAL);
+}
+
+function stopNewsRotation() {
+    if (newsRotationTimer) {
+        clearInterval(newsRotationTimer);
+        newsRotationTimer = null;
+    }
+}
+
+function getDismissedNewsIds() {
+    try {
+        return JSON.parse(localStorage.getItem('news-dismissed') || '[]');
+    } catch (_) { return []; }
+}
+
+function dismissAllNews() {
+    const ids = newsItems.map(i => i.id);
+    const dismissed = getDismissedNewsIds();
+    const merged = [...new Set([...dismissed, ...ids])];
+    localStorage.setItem('news-dismissed', JSON.stringify(merged));
+}
+
+function showNewsFeed() {
+    if (newsItems.length > 0 && newsFeed) {
+        newsFeed.style.display = '';
+        startNewsRotation();
+    }
+}
+
+function hideNewsFeed() {
+    if (newsFeed) {
+        newsFeed.style.display = 'none';
+        stopNewsRotation();
+    }
+}
+
+function initNewsFeed(items) {
+    const dismissed = getDismissedNewsIds();
+    newsItems = items.filter(i => i.id && !dismissed.includes(i.id));
+
+    if (!newsItems.length) return;
+
+    // Build pips
+    newsFeedPips.innerHTML = '';
+    newsItems.forEach((_, i) => {
+        const pip = document.createElement('span');
+        pip.className = 'news-feed-pip' + (i === 0 ? ' active' : '');
+        pip.addEventListener('click', () => {
+            newsCurrentIndex = i;
+            displayNewsItem(i);
+            stopNewsRotation();
+            startNewsRotation();
+        });
+        newsFeedPips.appendChild(pip);
+    });
+
+    newsCurrentIndex = 0;
+    displayNewsItem(0);
+    newsFeed.style.display = '';
+    startNewsRotation();
+}
+
+// "Click to read more" toggle
+newsFeedMore.addEventListener('click', () => {
+    if (!newsExpanded) {
+        newsFeedDetail.style.display = '';
+        newsFeedMore.textContent = 'Click to collapse';
+        newsExpanded = true;
+    } else {
+        newsFeedDetail.style.display = 'none';
+        newsFeedMore.textContent = 'Click to read more';
+        newsExpanded = false;
+    }
+});
+
+// Close button — dismiss all current news
+newsFeedClose.addEventListener('click', () => {
+    dismissAllNews();
+    newsItems = [];
+    hideNewsFeed();
+});
+
+// IPC: receive news from main process
+window.electronAPI.onNewsData((data) => {
+    if (data.items && data.items.length > 0) initNewsFeed(data.items);
 });

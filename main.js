@@ -161,6 +161,45 @@ async function checkForUpdates() {
     }
 }
 
+// ── News feed ──────────────────────────────────────────────────────────────────
+async function fetchNews() {
+    log.info('Fetching news feed...');
+    try {
+        const { net } = require('electron');
+        const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/news.json`;
+        const response = await net.fetch(url, {
+            headers: { 'User-Agent': 'NullChat-News' }
+        });
+
+        if (!response.ok) {
+            log.warn(`News fetch HTTP error: ${response.status}`);
+            mainWindow.webContents.send('news-data', { items: [] });
+            return;
+        }
+
+        const data = await response.json();
+        if (!data || !Array.isArray(data.items)) {
+            log.warn('News feed: invalid format');
+            mainWindow.webContents.send('news-data', { items: [] });
+            return;
+        }
+
+        const now = new Date();
+        const items = data.items.filter(item => {
+            if (item.expires) {
+                try { return new Date(item.expires) > now; } catch (_) { return true; }
+            }
+            return true;
+        });
+
+        log.info(`News feed: ${items.length} item(s) loaded`);
+        mainWindow.webContents.send('news-data', { items });
+    } catch (err) {
+        log.error(`News fetch failed: ${err.message}`);
+        mainWindow.webContents.send('news-data', { items: [] });
+    }
+}
+
 // ── Download update ─────────────────────────────────────────────────────────────
 let isDownloading = false;
 
@@ -356,6 +395,7 @@ function createWindow() {
         mainWindow.show();
         log.info('Main window visible');
         checkForUpdates();
+        fetchNews();
     });
 
     // Minimize to tray instead of closing (when enabled)

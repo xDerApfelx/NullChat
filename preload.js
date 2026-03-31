@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
     onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
+    onNewsData: (cb) => ipcRenderer.on('news-data', (_e, data) => cb(data)),
 
     // Friends list
     getFriends: () => ipcRenderer.invoke('get-friends'),
