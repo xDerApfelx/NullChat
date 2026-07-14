@@ -56,6 +56,13 @@ function loadOrCreateUserId() {
     return userId;
 }
 
+// ── Safe renderer send (window may already be closed) ──────────────────────────
+function sendToRenderer(channel, payload) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, payload);
+    }
+}
+
 // ── Update system ───────────────────────────────────────────────────────────────
 const GITHUB_REPO = 'xDerApfelx/NullChat';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
@@ -144,7 +151,7 @@ async function checkForUpdates() {
             log.warn(`Current version ${currentVersion} has been REVOKED`);
         }
 
-        mainWindow.webContents.send('update-available', {
+        sendToRenderer('update-available', {
             currentVersion: currentVersion,
             latestVersion: latestStable ? latestStable.tag_name : currentVersion,
             hasUpdate: !!hasUpdate,
@@ -173,14 +180,14 @@ async function fetchNews() {
 
         if (!response.ok) {
             log.warn(`News fetch HTTP error: ${response.status}`);
-            mainWindow.webContents.send('news-data', { items: [] });
+            sendToRenderer('news-data', { items: [] });
             return;
         }
 
         const data = await response.json();
         if (!data || !Array.isArray(data.items)) {
             log.warn('News feed: invalid format');
-            mainWindow.webContents.send('news-data', { items: [] });
+            sendToRenderer('news-data', { items: [] });
             return;
         }
 
@@ -193,10 +200,10 @@ async function fetchNews() {
         });
 
         log.info(`News feed: ${items.length} item(s) loaded`);
-        mainWindow.webContents.send('news-data', { items });
+        sendToRenderer('news-data', { items });
     } catch (err) {
         log.error(`News fetch failed: ${err.message}`);
-        mainWindow.webContents.send('news-data', { items: [] });
+        sendToRenderer('news-data', { items: [] });
     }
 }
 
@@ -248,9 +255,7 @@ ipcMain.handle('download-update', async () => {
 
             if (contentLength > 0) {
                 const percent = Math.round((downloaded / contentLength) * 100);
-                if (mainWindow) {
-                    mainWindow.webContents.send('download-progress', { percent });
-                }
+                sendToRenderer('download-progress', { percent });
             }
         }
 
@@ -382,6 +387,24 @@ function createWindow() {
     mainWindow.on('resize', saveWindowBounds);
     mainWindow.on('move', saveWindowBounds);
 
+    // Control window.open: allow blob: image previews in a sandboxed child
+    // window, route http(s) to the system browser, deny everything else
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('blob:')) {
+            return {
+                action: 'allow',
+                overrideBrowserWindowOptions: {
+                    autoHideMenuBar: true,
+                    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true }
+                }
+            };
+        }
+        if (url.startsWith('https://') || url.startsWith('http://')) {
+            shell.openExternal(url);
+        }
+        return { action: 'deny' };
+    });
+
     if (process.platform !== 'darwin') {
         mainWindow.setMenuBarVisibility(false);
     }
@@ -477,7 +500,7 @@ const DEFAULT_SETTINGS = {
     micGain: 1.0,
     noiseSuppression: true,
     vadEnabled: true,
-    vadThreshold: 0.015,
+    vadThreshold: 0.025,
     ringtoneVolume: 0.25,
     showWelcome: true,
     notificationsEnabled: true,

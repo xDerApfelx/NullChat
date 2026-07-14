@@ -119,6 +119,8 @@ const ringtoneVolumeValue = document.getElementById('ringtone-volume-value');
 const CALL_TIMEOUT_MS = 60000;
 const OUTGOING_CALL_TIMEOUT_MS = 60000;
 const SAVE_DEBOUNCE_MS = 5000;
+const CONNECT_OPEN_TIMEOUT_MS = 20000;   // Abort outgoing connections that never open (firewall/NAT)
+const MAX_ID_RETRIES = 6;                // Auto-retry attempts when our ID is still held by an old session
 
 // ── State ───────────────────────────────────────────────────────────────────────
 let peer = null;
@@ -168,6 +170,7 @@ const activeOutgoingTransfers = new Map(); // transferId → { file, peerId, sen
 const activeIncomingTransfers = new Map(); // transferId → { chunks[], metadata, receivedCount }
 const fileCache = new Map();               // transferId → { blob, blobUrl, fileName, fileType, fileSize, timestamp }
 const CHUNK_SIZE = 14336;                  // 14KB raw (≈19KB as base64+JSON, under SCTP limit)
+const MAX_BUFFERED_AMOUNT = 4 * 1024 * 1024; // Pause sending while >4MB is queued in the data channel
 const AUTO_ACCEPT_THRESHOLD = 10 * 1024 * 1024; // 10MB
 const FILE_CACHE_TTL = 60 * 60 * 1000;    // 1 hour
 
@@ -190,6 +193,18 @@ const remoteMuteStates = new Map();  // Map<PeerId, boolean> — remote peer mut
 const friendOnlineStatus = new Map();  // Map<PeerId, boolean>
 let onlineCheckInterval = null;
 const pendingStatusChecks = new Set(); // Peer IDs being probed (suppress peer-unavailable errors)
+
+// Outgoing connection watchdogs
+const connectOpenTimeouts = new Map(); // Map<PeerId, timeoutId> — abort connections that never open
+let idRetryCount = 0;                  // Retries after 'unavailable-id' (stale session on signaling server)
+
+function clearConnectOpenTimeout(peerId) {
+    const t = connectOpenTimeouts.get(peerId);
+    if (t) {
+        clearTimeout(t);
+        connectOpenTimeouts.delete(peerId);
+    }
+}
 
 // Chat search state
 let searchResults = [];         // Array of { id, sender, text, timestamp }
@@ -368,59 +383,63 @@ function stopOnlineChecks() {
     }
 }
 
+function probeFriendOnlineStatus(friendId) {
+    if (!peer || peer.disconnected || peer.destroyed) return;
+
+    // Already connected — definitely online
+    if (connectedPeers.has(friendId)) {
+        if (!friendOnlineStatus.get(friendId)) {
+            friendOnlineStatus.set(friendId, true);
+            renderFriendsList();
+        }
+        return;
+    }
+
+    // Already checking this peer
+    if (pendingStatusChecks.has(friendId)) return;
+
+    pendingStatusChecks.add(friendId);
+    try {
+        const testConn = peer.connect(friendId, { metadata: { type: 'status-check' } });
+        const timeout = setTimeout(() => {
+            pendingStatusChecks.delete(friendId);
+            if (friendOnlineStatus.get(friendId) !== false) {
+                friendOnlineStatus.set(friendId, false);
+                renderFriendsList();
+            }
+            try { testConn.close(); } catch {}
+        }, 5000);
+
+        testConn.on('open', () => {
+            clearTimeout(timeout);
+            pendingStatusChecks.delete(friendId);
+            if (!friendOnlineStatus.get(friendId)) {
+                friendOnlineStatus.set(friendId, true);
+                renderFriendsList();
+            }
+            try { testConn.close(); } catch {}
+        });
+
+        testConn.on('error', () => {
+            clearTimeout(timeout);
+            pendingStatusChecks.delete(friendId);
+            if (friendOnlineStatus.get(friendId) !== false) {
+                friendOnlineStatus.set(friendId, false);
+                renderFriendsList();
+            }
+        });
+    } catch {
+        pendingStatusChecks.delete(friendId);
+        friendOnlineStatus.set(friendId, false);
+    }
+}
+
 function checkFriendsOnlineStatus() {
     if (!peer || peer.disconnected || peer.destroyed) return;
     if (!document.hasFocus()) return;
     if (friendsData.friends.length === 0) return;
 
-    friendsData.friends.forEach(friend => {
-        // Already connected — definitely online
-        if (connectedPeers.has(friend.id)) {
-            if (!friendOnlineStatus.get(friend.id)) {
-                friendOnlineStatus.set(friend.id, true);
-                renderFriendsList();
-            }
-            return;
-        }
-
-        // Already checking this peer
-        if (pendingStatusChecks.has(friend.id)) return;
-
-        pendingStatusChecks.add(friend.id);
-        try {
-            const testConn = peer.connect(friend.id, { metadata: { type: 'status-check' } });
-            const timeout = setTimeout(() => {
-                pendingStatusChecks.delete(friend.id);
-                if (friendOnlineStatus.get(friend.id) !== false) {
-                    friendOnlineStatus.set(friend.id, false);
-                    renderFriendsList();
-                }
-                try { testConn.close(); } catch {}
-            }, 5000);
-
-            testConn.on('open', () => {
-                clearTimeout(timeout);
-                pendingStatusChecks.delete(friend.id);
-                if (!friendOnlineStatus.get(friend.id)) {
-                    friendOnlineStatus.set(friend.id, true);
-                    renderFriendsList();
-                }
-                try { testConn.close(); } catch {}
-            });
-
-            testConn.on('error', () => {
-                clearTimeout(timeout);
-                pendingStatusChecks.delete(friend.id);
-                if (friendOnlineStatus.get(friend.id) !== false) {
-                    friendOnlineStatus.set(friend.id, false);
-                    renderFriendsList();
-                }
-            });
-        } catch {
-            pendingStatusChecks.delete(friend.id);
-            friendOnlineStatus.set(friend.id, false);
-        }
-    });
+    friendsData.friends.forEach(friend => probeFriendOnlineStatus(friend.id));
 }
 
 // ── Call hint helpers (sidebar collapsed notification) ───────────────────────────
@@ -674,6 +693,13 @@ function renderFriendsList() {
             if (e.target === deleteBtn) return;
             if (pendingConn && pendingConn.peer === friend.id) {
                 acceptPendingConnection();
+                return;
+            }
+            if (connectedPeers.has(friend.id)) return; // already in this call
+            if (inSession) {
+                // Already in a call — invite properly so ALL participants learn
+                // about the new peer (mesh-peer-list + mesh-invite)
+                invitePeerToMesh(friend.id);
                 return;
             }
             friendIdInput.value = friend.id;
@@ -1020,6 +1046,13 @@ async function handleProtocolMessage(peerId, raw) {
                 isRecording = true;
                 recordingPeerId = peerId;
                 isRecordingPaused = false;
+                // Persist so recording also resumes on this side after a restart
+                window.electronAPI.chatSetRecording(peerId, true);
+                // Load saved history if we have any and haven't loaded it yet
+                const hasHistory = await window.electronAPI.chatExists(peerId);
+                if (hasHistory && oldestLoadedMsgId === 0 && !historySeparatorAdded) {
+                    await loadChatHistory(peerId, true);
+                }
                 updateRecordingUI();
                 updateRecordingSize();
             }
@@ -1138,6 +1171,10 @@ function removePeer(peerId, reason) {
 
     connectedPeers.delete(peerId);
     friendOnlineStatus.set(peerId, false);
+    // They may have only left the call, not closed the app — re-check shortly
+    if (isFriend(peerId)) {
+        setTimeout(() => probeFriendOnlineStatus(peerId), 2000);
+    }
     updateAttachBtnState();
     expectedMeshPeers.delete(peerId);
     lastHeartbeat.delete(peerId);
@@ -1151,6 +1188,16 @@ function removePeer(peerId, reason) {
     const name = getFriendName(peerId) || peerId.substring(0, 8) + '…';
     addSystemMessage(`${name} ${reason}.`, 'warning');
     rlog.info('Peer removed: ' + reason);
+
+    // If the peer shown in the header left but others remain, promote another
+    // peer so the header, add-friend button and death button target a real peer
+    if (peerId === currentPeerId && connectedPeers.size > 0) {
+        currentPeerId = connectedPeers.values().next().value;
+        const nextName = getFriendName(currentPeerId) || currentPeerId.substring(0, 8) + '…';
+        peerAvatar.textContent = nextName[0].toUpperCase();
+        peerNameEl.textContent = nextName;
+        addFriendBtn.classList.toggle('hidden', isFriend(currentPeerId));
+    }
 
     updateParticipantList();
 
@@ -1235,7 +1282,24 @@ function connectToPeer(peerId, isMeshTriggered) {
 
     const outgoing = peer.connect(peerId, { reliable: true });
 
+    // Watchdog: if the connection neither opens nor errors (stalled NAT/firewall),
+    // abort so the UI never gets stuck on "Connecting…" with a disabled button.
+    clearConnectOpenTimeout(peerId);
+    connectOpenTimeouts.set(peerId, setTimeout(() => {
+        connectOpenTimeouts.delete(peerId);
+        try { outgoing.close(); } catch { }
+        rlog.warn('Outgoing connection timed out before opening');
+        if (!isMeshTriggered && !inSession) {
+            statusText.textContent = 'Connection timed out — peer may be unreachable';
+            statusText.className = 'status-text error';
+            connectBtn.disabled = false;
+        } else {
+            showToast('Could not reach peer', 'error');
+        }
+    }, CONNECT_OPEN_TIMEOUT_MS));
+
     outgoing.on('open', () => {
+        clearConnectOpenTimeout(peerId);
         wireConnection(outgoing);
 
         if (!inSession && !isMeshTriggered) {
@@ -1264,6 +1328,7 @@ function connectToPeer(peerId, isMeshTriggered) {
     });
 
     outgoing.on('error', (err) => {
+        clearConnectOpenTimeout(peerId);
         rlog.error('Outgoing connection failed: ' + err.type);
         hideCallingScreen();
         if (!isMeshTriggered) {
@@ -1295,7 +1360,17 @@ function invitePeerToMesh(peerId) {
 
     const outgoing = peer.connect(peerId, { reliable: true });
 
+    // Watchdog: abort silently-stalled invites (see connectToPeer)
+    clearConnectOpenTimeout(peerId);
+    connectOpenTimeouts.set(peerId, setTimeout(() => {
+        connectOpenTimeouts.delete(peerId);
+        try { outgoing.close(); } catch { }
+        rlog.warn('Mesh invite timed out before opening');
+        showToast('Could not reach peer', 'error');
+    }, CONNECT_OPEN_TIMEOUT_MS));
+
     outgoing.on('open', () => {
+        clearConnectOpenTimeout(peerId);
         wireConnection(outgoing);
 
         // 1. Tell the new peer about existing mesh members FIRST
@@ -1320,6 +1395,7 @@ function invitePeerToMesh(peerId) {
     });
 
     outgoing.on('error', (err) => {
+        clearConnectOpenTimeout(peerId);
         rlog.error('Mesh invite failed: ' + err.type);
         if (err.type === 'peer-unavailable') {
             showToast('Peer is not online', 'error');
@@ -1672,7 +1748,8 @@ async function persistMessage(sender, text, msgType = 'text') {
     const result = await window.electronAPI.chatSaveMessage(recordingPeerId, sender, text, msgType);
     // Tag the most recently added message element with its DB id for search navigation
     if (result && result.id) {
-        const msgs = chatMessages.querySelectorAll('.message:not([data-msg-id])');
+        // Exclude file messages (id="file-msg-…") so the DB id lands on the right bubble
+        const msgs = chatMessages.querySelectorAll('.message:not([data-msg-id]):not([id^="file-msg-"])');
         const last = msgs[msgs.length - 1];
         if (last) last.dataset.msgId = result.id;
     }
@@ -2401,6 +2478,14 @@ async function startChunkTransfer(transferId) {
             data: base64
         });
 
+        // Backpressure: wait while the data channel's send buffer is full,
+        // otherwise large files can overflow the buffer and kill the connection
+        while (conn.dataChannel && conn.dataChannel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
+            await new Promise(r => setTimeout(r, 50));
+            if (!activeOutgoingTransfers.has(transferId)) return;
+            if (!conn.open) break;
+        }
+
         if (!conn.open) {
             transfer.status = 'failed';
             updateFileMessage(transferId, 'failed');
@@ -2917,6 +3002,7 @@ function setupPeer() {
     });
 
     peer.on('open', (id) => {
+        idRetryCount = 0;
         myIdEl.textContent = id;
         statusText.textContent = 'Ready to connect';
         statusText.className = 'status-text success';
@@ -2928,11 +3014,14 @@ function setupPeer() {
     peer.on('error', (err) => {
         rlog.error('PeerJS error: ' + err.type);
         if (err.type === 'peer-unavailable') {
-            // Suppress errors from online status check probes
             const match = err.message && err.message.match(/Could not connect to peer (\S+)/);
-            if (match && pendingStatusChecks.has(match[1])) {
-                pendingStatusChecks.delete(match[1]);
-                friendOnlineStatus.set(match[1], false);
+            const targetId = match ? match[1] : null;
+            // The failed connection is settled — stop its watchdog
+            if (targetId) clearConnectOpenTimeout(targetId);
+            // Suppress errors from online status check probes
+            if (targetId && pendingStatusChecks.has(targetId)) {
+                pendingStatusChecks.delete(targetId);
+                friendOnlineStatus.set(targetId, false);
                 renderFriendsList();
                 return;
             }
@@ -2944,11 +3033,42 @@ function setupPeer() {
                 showToast('Peer is not online', 'error');
             }
         } else if (err.type === 'unavailable-id') {
-            statusText.textContent = 'Your ID is busy. Click Reconnect below.';
-            statusText.className = 'status-text error';
+            // A stale session (e.g. after a crash) may still hold our ID on the
+            // signaling server — retry automatically until the server drops it
+            if (idRetryCount < MAX_ID_RETRIES) {
+                idRetryCount++;
+                statusText.textContent = `Your ID is held by an old session — retrying (${idRetryCount}/${MAX_ID_RETRIES})…`;
+                statusText.className = 'status-text error';
+                rlog.warn('ID busy, auto-retrying (' + idRetryCount + '/' + MAX_ID_RETRIES + ')');
+                setTimeout(() => {
+                    if (peer) { try { peer.destroy(); } catch { } }
+                    setupPeer();
+                }, 5000);
+            } else {
+                statusText.textContent = 'Your ID is busy. Click Reconnect below.';
+                statusText.className = 'status-text error';
+            }
         } else {
             showToast('Error: ' + err.message, 'error');
+            // Never leave the connect button stuck disabled after an error
+            if (!inSession) connectBtn.disabled = false;
         }
+    });
+
+    // Signaling server connection dropped (network hiccup, standby) — reconnect
+    // automatically so new connections keep working without a manual restart
+    peer.on('disconnected', () => {
+        if (!peer || peer.destroyed) return;
+        rlog.warn('Lost connection to signaling server, reconnecting…');
+        if (!inSession) {
+            statusText.textContent = 'Connection to server lost — reconnecting…';
+            statusText.className = 'status-text error';
+        }
+        setTimeout(() => {
+            if (peer && !peer.destroyed && peer.disconnected) {
+                try { peer.reconnect(); } catch { }
+            }
+        }, 2000);
     });
 
     // ── Incoming data connections ──
@@ -3746,7 +3866,7 @@ window.addEventListener('beforeunload', () => {
 
 // ── Heartbeat: 3-strike system for peer timeout detection ────────────────────
 const HEARTBEAT_INTERVAL_MS = 5000;
-const HEARTBEAT_TIMEOUT_MS = 15000; // per-check timeout (3 checks = ~45s total)
+const HEARTBEAT_TIMEOUT_MS = 15000; // per-check timeout (3 strikes ≈ 25-30s total)
 const HEARTBEAT_MAX_STRIKES = 3;
 const lastHeartbeat = new Map();    // Map<PeerId, timestamp>
 const heartbeatStrikes = new Map(); // Map<PeerId, number>
@@ -4461,7 +4581,7 @@ document.getElementById('settings-reset-btn').addEventListener('click', async ()
     document.getElementById('setting-minimize-to-tray').checked = false;
     settingNoiseSuppression.checked = true;
     settingVad.checked = true;
-    settingVadThreshold.value = 15;
+    settingVadThreshold.value = 25;
     vadThresholdValue.textContent = '25';
     vadSensitivityRow.style.display = '';
     settingMicGain.value = 100;

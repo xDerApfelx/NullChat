@@ -14,13 +14,23 @@
   "version": 1,
   "items": [
     {
+      "id": "2026-07-14-v32-coming",
+      "color": "green",
+      "blink": false,
+      "date": "2026-07-14",
+      "title": "NullChat 3.2 is coming soon!",
+      "summary": "A big stability update is on its way — and we want your feature wishes!",
+      "detail": "Version 3.2 focuses on connection reliability: no more stuck 'Connecting…' states, automatic reconnect when the signaling server drops, smoother group invites from the sidebar, more stable large file transfers, and the 'Install for all users' option on Windows works again. Got a feature you'd love to see? Open an issue on GitHub (github.com/xDerApfelx/NullChat/issues) and tell us your wishes — we read every single one!",
+      "expires": null
+    },
+    {
       "id": "2026-03-31-signature-issue",
       "color": "red",
       "blink": true,
       "date": "2026-03-30",
       "title": "Important: Installation issue due to signature error",
       "summary": "The EXE can no longer run as admin. A reinstall to a different location is required.",
-      "detail": "Due to a signature issue, NullChat can no longer be executed as administrator. This means the 'Install for all users' option on Windows is currently unavailable. The application must be installed to a different location, which unfortunately causes all previous data (ID, settings, contacts) to be lost. Every affected user will receive a new ID and must re-add their settings and friends. We sincerely apologize for the inconvenience and are working on a fix.",
+      "detail": "Due to a signature issue, NullChat can no longer be executed as administrator. This means the 'Install for all users' option on Windows is currently unavailable. The application must be installed to a different location, which unfortunately causes all previous data (ID, settings, contacts) to be lost. Every affected user will receive a new ID and must re-add their settings and friends. We sincerely apologize for the inconvenience. Update: this is fixed in the upcoming version 3.2.",
       "expires": null
     },
     {
